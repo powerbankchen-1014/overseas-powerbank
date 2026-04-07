@@ -356,19 +356,62 @@ function calculateResults(params) {
   // ===== 7. 月总成本 =====
   const totalMonthlyCost = monthlyLaborCost + monthlyOverhead;
 
-  // ===== 8. 月利润 =====
+  // ===== 8. 月利润 =====  （全量运营时的月利润）
   const monthlyProfit = monthlyNetIncome - totalMonthlyCost;
 
-  // ===== 9. 回本周期 =====
-  // 初始投入 = 设备成本 + 开办费
-  const initialInvestment = totalHardwareInvestment + 50000;
+  // ===== 9. 盈亏平衡点（月）——按当月现金流计算 =====
+  // 算法说明：
+  // - Month 1：准备期，无设备落地，当月支出 = 固定成本+开办费，当月收入=0
+  // - Month 2 开始：每月落地 300 台
+  // - 盈亏平衡点 = 第一个"当月收入 > 当月支出"的月份
+  const PER_MONTH_DEPLOY = 300; // 每月铺设备数
+  const startUpCost = 50000; // 开办费
+  const perUnitMonthlyContribution = monthlyNetIncome / scale; // 每台每月净贡献
 
+  let breakevenMonth = null;
+  let month = 1;
+  let deployed = 0;
+
+  // Month 1：准备期（无设备，无收入）
+  const month1Expense = totalMonthlyCost + startUpCost;
+  if (month1Expense <= 0) breakevenMonth = 1; // 理论上不可能
+  if (breakevenMonth === null) month++;
+
+  // 部署期：每月落地设备，当月收入=已部署台数×单台净贡献
+  while (deployed < scale && breakevenMonth === null && month <= 60) {
+    deployed = Math.min(deployed + PER_MONTH_DEPLOY, scale);
+    const thisMonthRevenue = deployed * perUnitMonthlyContribution;
+    const thisMonthExpense = totalMonthlyCost; // 当月固定成本
+    if (thisMonthRevenue > thisMonthExpense) {
+      breakevenMonth = month; // 当月现金流首次转正
+    }
+    month++;
+  }
+
+  // 全部铺完后仍不够 → 检查全量状态下是否盈利
+  if (breakevenMonth === null && deployed >= scale) {
+    if (monthlyNetIncome > totalMonthlyCost) {
+      breakevenMonth = month; // 全量落地后再跑一个月，全量收入覆盖固定成本
+    }
+  }
+
+  // 如果全量落地后月利润仍<=0，说明规模不够
+  if (breakevenMonth === null) breakevenMonth = 999;
+
+  // ===== 10. 回本周期 —— 基于真实月现金流 =====
+  const initialInvestment = totalHardwareInvestment + startUpCost;
   let paybackMonths;
   if (monthlyProfit <= 0) {
     paybackMonths = 999;
   } else {
+    // 重新计算：从第一个月现金流开始累加
+    // Month 1: -labor -overhead -startup -device_deployed_month1(0)
+    // Month 2+: revenue - fixed_cost
+    // 回本 = 初始投入 / 月利润，但起始点要等全部设备铺完后的次月开始算
+    // 为简化：仍然用全量月利润 / 总投入，但以全部落地后那个月为起点
     paybackMonths = Math.ceil(initialInvestment / monthlyProfit);
     paybackMonths = Math.min(paybackMonths, 60);
+    paybackMonths += (breakevenMonth < 999 ? breakevenMonth : 1);
   }
 
   // ===== 10. 风险评估 =====
@@ -420,6 +463,7 @@ function calculateResults(params) {
   return {
     investment: Math.round(investment),
     paybackMonths,
+    breakevenMonth,
     monthlyProfit: Math.round(monthlyProfit),
     monthlyNetIncome: Math.round(monthlyNetIncome),
     monthlyGrossIncome: Math.round(monthlyGrossIncome),
@@ -524,7 +568,7 @@ function calculateMinimumViableScale(params) {
 
 function generateAnalysis(params, results) {
   const { monthlyIncome, splitRatio, channelRatio, bdRatio, scale, mode, countryText, totalInvestment } = params;
-  const { monthlyProfit, paybackMonths, fundPressure, complexity, monthlyNetIncome, monthlyLaborCost, monthlyOverhead } = results;
+  const { monthlyProfit, paybackMonths, fundPressure, complexity, monthlyNetIncome, monthlyLaborCost, monthlyOverhead, breakevenMonth } = results;
 
   // 盈利核心判断
   let profitAnalysis = '';
@@ -580,35 +624,50 @@ function generateAnalysis(params, results) {
     risks.push('当前参数设置相对合理，建议尽快推进项目验证');
   }
 
-  // 建议动作
+  // 建议动作 —— 全新框架（使用i18n翻译系统）
   const suggestions = [];
+  const lang = window.currentLang || 'zh';
 
-  if (bdRatio > 0.3) {
-    suggestions.push('🔥 建议优先寻找大型连锁商超、购物中心、机场、酒吧等优质渠道合作，优先采用"渠道铺设"模式快速起量');
+  function s(key, params) {
+    const t = translations[key];
+    if (!t) return key;
+    let text = t[lang] || t.zh || key;
+    if (params) {
+      Object.keys(params).forEach(function(p) {
+        text = text.replace(p, params[p]);
+      });
+    }
+    return text;
   }
 
-  if (channelRatio < 0.5) {
-    suggestions.push('🔥 渠道铺设比例偏低，建议将渠道占比提升至50%以上，可大幅降低团队管理难度');
+  // ===== 1. 首批规模盈亏点引导（最重要） =====
+  if (breakevenMonth >= 999) {
+    suggestions.push(s('suggest-breakeven-fail'));
+  } else if (breakevenMonth > 6) {
+    suggestions.push(s('suggest-breakeven-slow', { 'N': breakevenMonth }));
+  } else {
+    suggestions.push(s('suggest-breakeven-good'));
   }
 
-  if (scale > 500) {
-    suggestions.push('建议先以单城市、300-500台进行小规模验证，降低试错成本');
+  // ===== 2. 玖果科技专业服务引导 =====
+  // 所有客户都会看到这些核心服务价值
+  suggestions.push(s('suggest-jiuguo-softpower'));
+
+  // ===== 3. 按具体情况补充建议 =====
+  if (bdRatio > 0.35) {
+    suggestions.push(s('suggest-bd-ratio'));
   }
 
-  if (splitRatio > 0.2) {
-    suggestions.push('建议与商户谈判分成比例，控制在20%以内可显著提升盈利能力');
+  if (splitRatio > 0.22) {
+    suggestions.push(s('suggest-split-ratio'));
   }
 
   if (fundPressure === 'high') {
-    suggestions.push('前期资金压力较大，建议分3个阶段各投放33%的设备，每阶段验证后再追加');
-  }
-
-  if (scale < 200) {
-    suggestions.push('首批规模较小，可考虑适当增加至300台以上，以形成规模效应降低单位运营成本');
+    suggestions.push(s('suggest-staged-purchase'));
   }
 
   if (suggestions.length === 0) {
-    suggestions.push('当前参数较为健康，建议尽快锁定优质渠道并开始小批量测试');
+    suggestions.push(s('suggest-all-good'));
   }
 
   return {
@@ -636,6 +695,38 @@ function calculateAndShowResult() {
 }
 
 function updateResultUI(params, results, analysis, viability) {
+
+  // ========== 首批设备盈亏分析 ==========
+  const fbCard = document.getElementById('first-batch-card');
+  if (fbCard) {
+    fbCard.style.display = 'block';
+
+    // 盈亏平衡点（月）—— 使用按月铺设模型的真实计算结果
+    const breakevenEl = document.getElementById('fb-breakeven');
+    const breakevenVal = results.breakevenMonth;
+    if (breakevenVal >= 999) {
+      breakevenEl.textContent = '无法回本';
+      breakevenEl.className = 'fb-metric-value danger';
+    } else {
+      breakevenEl.textContent = breakevenVal;
+      breakevenEl.className = breakevenVal <= 12 ? 'fb-metric-value primary' : 'fb-metric-value';
+    }
+
+    // 回本周期（首批）—— 直接使用计算结果
+    const paybackEl = document.getElementById('fb-payback');
+    if (results.paybackMonths >= 999) {
+      paybackEl.textContent = '无法回本';
+      paybackEl.className = 'fb-metric-value danger';
+    } else if (results.paybackMonths > 48) {
+      paybackEl.textContent = '48+';
+    } else {
+      paybackEl.textContent = results.paybackMonths;
+    }
+
+    // 首批规模
+    document.getElementById('fb-scale').textContent = params.scale;
+  }
+
   // ========== 最低盈利台数模块（仅在不健康时显示） ==========
   const minScaleCard = document.getElementById('min-scale-card');
 
@@ -787,6 +878,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 默认语言
   window.currentLang = 'zh';
+
+  // ===== 自动语言切换（根据IP检测） =====
+  function applyAutoLang(lang) {
+    if (lang === 'en') {
+      switchLang('en');
+    }
+  }
+
+  // 等待 autoLangDetect 事件（IP检测触发）
+  document.addEventListener('autoLangDetect', function(e) {
+    if (e.detail === 'en') {
+      switchLang('en');
+      document.getElementById('lang-zh').classList.remove('active');
+      document.getElementById('lang-en').classList.add('active');
+    }
+  });
+
+  // 若 _autoLang 已由 head 脚本设置，立即应用
+  if (window._autoLang === 'en') {
+    switchLang('en');
+    document.getElementById('lang-zh').classList.remove('active');
+    document.getElementById('lang-en').classList.add('active');
+  }
 });
 
 // ========== 中英文切换 ==========
@@ -985,6 +1099,36 @@ const translations = {
   'wyg-3': { zh: '目标国家本地化落地checklist（支付/短信/税务）', en: 'Target country localization checklist (payment/SMS/tax)' },
   'wyg-4': { zh: '1对1项目诊断机会（30分钟语音）', en: '1-on-1 project diagnosis (30-min call)' },
   'btn-back-result': { zh: '← 返回查看结果', en: '← Back to Results' },
+
+  // 首批设备盈亏分析
+  'fb-badge': { zh: '📌 首批设备 · 静态测算', en: '📌 First Batch · Static Calculation' },
+  'fb-title': { zh: '首批设备落地盈亏分析', en: 'First Batch Break-Even Analysis' },
+  'fb-subtitle': { zh: '以下为仅落地首批设备的测算结果，持续扩张可加速回本', en: 'Results below are for first batch deployment only. Continuing expansion accelerates payback' },
+  'fb-breakeven-label': { zh: '盈亏平衡点', en: 'Break-Even Point' },
+  'fb-payback-label': { zh: '首批回本周期', en: 'First Batch Payback' }, // 显示在卡片中
+  'fb-payback-note': { zh: '（停止发展，首批设备需', en: '(If paused, first batch needs ' }, // 补充说明
+  'fb-scale-label': { zh: '首批规模', en: 'First Batch Scale' },
+  'fb-months': { zh: '个月', en: ' months' },
+  'fb-contr-text': {
+    zh: '<strong>持续扩张 = 更快回本</strong><br><span>首批回本后，继续铺设第2、3批设备，边际成本更低（团队已成型、渠道已打通），回本周期将显著缩短。</span>',
+    en: '<strong>Scale Further = Faster Payback</strong><br><span>After first batch pays back, adding batch 2 & 3 units lowers marginal cost (team is built, channels are open), significantly shortening payback.</span>'
+  },
+  'fb-note': { zh: '⚠️ 以上数据基于首批设备静态测算，未计入持续扩张带来的规模效应与运营效率提升', en: '⚠️ Results above are static for first batch only, excluding scale economy from continued expansion' },
+
+  // 官网引流
+  'website-text': { zh: '了解玖果科技完整解决方案', en: 'Explore Juugo Tech Full-Stack Solutions' },
+  'website-link-text': { zh: '访问官网 www.jiuguotech.com', en: 'Visit www.jiuguotech.com' },
+
+  // 建议动作（中英双语，因为建议是动态生成的，key用占位符，由JS判断语言返回）
+  'suggest-breakeven-fail': { zh: '⚠️ 当前规模尚未达到盈亏平衡点，建议增加首批采购数量，确保首批落地后当月能覆盖固定运营成本，避免盘子断裂', en: '⚠️ Current scale has not reached break-even. Add more units to ensure monthly revenue covers fixed operating costs from day one' },
+  'suggest-breakeven-slow': { zh: '📊 盈亏平衡需 ' + 'N' + ' 个月，建议在洽谈渠道时优先选择人流密集的连锁点位，缩短爬坡期', en: '📊 Break-even takes N months. Prioritize high-traffic chain locations to shorten the ramp-up period' },
+  'suggest-breakeven-good': { zh: '✅ 首批规模已达到盈亏平衡点以上，盘子健康，建议快速锁定核心渠道启动落地', en: '✅ Scale exceeds break-even point — business is healthy. Move fast to lock in core channels' },
+  'suggest-jiuguo-softpower': { zh: '🤝 玖果提供的不只是硬件，更是"软实力"：协助培养当地用户租借习惯、商户进店激活工具、扫码裂变获客功能，让首批设备快速跑出正向现金流', en: '🤝 Jiuguo offers more than hardware — user habit coaching, merchant activation tools, and QR scan referral features that accelerate positive cash flow' },
+  'suggest-bd-ratio': { zh: '📍 海外市场BD效率偏低，建议以渠道/连锁合作为主，BD为辅，降低人力依赖', en: '📍 Overseas BD efficiency is low. Prioritize chain/channel partnerships over direct BD to reduce labor costs' },
+  'suggest-split-ratio': { zh: '💰 商户分成比例建议控制在20%以内，可向商户强调玖果的导流工具和用户运营支持，提升谈判筹码', en: '💰 Keep merchant split under 20%. Emphasize Jiuguo\'s traffic tools and user operations support to strengthen your negotiating position' },
+  'suggest-staged-purchase': { zh: '💵 建议分两批采购设备：首批60%快速落地验证，第2批40%在首批回本后再追加，降低资金压力', en: '💵 Split into two purchases: 60% first batch for validation, 40% after first batch breaks even — reduces capital pressure' },
+  'suggest-consult': { zh: '📩 当前参数下盈亏难以平衡，欢迎扫码咨询玖果，获取目标市场的定制化落地方案', en: '📩 Break-even is difficult with current parameters. Scan to consult Jiuguo for a customized market entry plan' },
+  'suggest-all-good': { zh: '🚀 各项指标健康，建议尽快与玖果顾问联系，获取目标市场的本地化落地指南和首批设备最优配置方案', en: '🚀 All indicators look good. Contact a Jiuguo advisor to get a localized market guide and optimal first-batch configuration plan' },
 };
 
 function switchLang(lang) {

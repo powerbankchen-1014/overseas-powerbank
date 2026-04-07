@@ -4,7 +4,66 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>海外共享充电宝项目测算工具 | Juugo Tech</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="海外共享充电宝项目ROI测算工具。输入关键参数，快速评估东南亚、中东、日韩、欧美市场的回本周期、收益潜力与风险等级。支持首批设备盈亏分析和规模化扩张建议。">
+  <meta name="keywords" content="shared power bank, power bank rental business, phone charging kiosk, mobile charging station, overseas power bank, power bank sharing business, power bank ROI calculator, portable charger rental, shared charging station, mobile phone charging rental, 共享充电宝, 海外共享充电宝, 充电宝投放">
+  <meta name="author" content="Juugo Tech">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="海外共享充电宝项目测算工具 | Juugo Tech">
+  <meta property="og:description" content="输入关键参数，快速评估海外市场共享充电宝项目的回本周期、收益潜力与风险等级。首批设备盈亏分析，支持东南亚、中东、日韩、欧美市场。">
+  <meta property="og:url" content="https://www.jiuguotech.com/calculator">
+  <meta property="og:site_name" content="Juugo Tech">
+  <meta property="og:image" content="https://www.jiuguotech.com/og-image.png">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:locale:alternate" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Overseas Power Bank ROI Calculator | Juugo Tech">
+  <meta name="twitter:description" content="Calculate payback period, ROI potential and risk level for your overseas power bank rental business. Supports SE Asia, Middle East, Japan/Korea, Europe & US markets.">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://www.jiuguotech.com/calculator">
+
+  <!-- Geo Tags for SEO -->
+  <meta name="geo.region" content="SG">
+  <meta name="geo.placename" content="Juugo Tech">
+
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Auto Language Detection: switch to English for non-Chinese visitors -->
+  <script>
+    (function() {
+      var storedLang = localStorage.getItem('calcLang');
+      if (storedLang) {
+        window._autoLang = storedLang;
+        return;
+      }
+      // Use free ipapi.co for GeoIP detection
+      fetch('https://ipapi.co/json/')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var countryCode = data && data.country_code;
+          // Chinese-speaking countries/regions: CN, TW, HK, MO, SG (if Chinese), MY
+          var zhRegions = ['CN', 'TW', 'HK', 'MO'];
+          if (zhRegions.indexOf(countryCode) === -1) {
+            window._autoLang = 'en';
+            // Will be picked up by JS init
+            var evt = new CustomEvent('autoLangDetect', { detail: 'en' });
+            document.dispatchEvent(evt);
+          } else {
+            window._autoLang = 'zh';
+          }
+        })
+        .catch(function() {
+          window._autoLang = 'zh';
+        });
+    })();
+  </script>
 </head>
 <body>
   <!-- 顶部导航 -->
@@ -425,7 +484,7 @@
           <div class="metric-value primary" id="total-investment-display">100<span class="metric-unit" data-i18n="unit-wan">万元</span></div>
         </div>
         <div class="metric-card">
-          <div class="metric-label" data-i18n="metric-payback">预计回本周期</div>
+          <div class="metric-label" data-i18n="metric-payback">回本周期<span style="font-size:10px;color:var(--text-muted);font-weight:400">（停止发展）</span></div>
           <div class="metric-value" id="payback-period">12-16<span class="metric-unit" data-i18n="unit-months">个月</span></div>
         </div>
         <div class="metric-card">
@@ -453,6 +512,45 @@
         <div class="metric-card">
           <div class="metric-label" data-i18n="metric-team">所需团队规模</div>
           <div class="metric-value" id="team-size-display">-</div>
+        </div>
+      </div>
+
+      <!-- ========== 首批设备盈亏分析（重点展示） ========== -->
+      <div class="first-batch-card" id="first-batch-card">
+        <div class="first-batch-header">
+          <div class="fb-badge" data-i18n="fb-badge">📌 首批设备 · 静态测算</div>
+          <div class="fb-title" data-i18n="fb-title">首批设备落地盈亏分析</div>
+          <div class="fb-subtitle" data-i18n="fb-subtitle">以下为仅落地首批设备的测算结果，持续扩张可加速回本</div>
+        </div>
+        <div class="fb-metrics">
+          <div class="fb-metric">
+            <div class="fb-metric-label" data-i18n="fb-breakeven-label">盈亏平衡点</div>
+            <div class="fb-metric-value danger" id="fb-breakeven">-</div>
+            <div class="fb-metric-unit" data-i18n="fb-months">个月</div>
+          </div>
+          <div class="fb-metric-divider"></div>
+          <div class="fb-metric">
+            <div class="fb-metric-label" data-i18n="fb-payback-label">首批回本周期</div>
+            <div class="fb-metric-value primary" id="fb-payback">-</div>
+            <div class="fb-metric-unit" data-i18n="fb-months">个月</div>
+            <div class="fb-payback-note" id="fb-payback-note">（停止发展时）</div>
+          </div>
+          <div class="fb-metric-divider"></div>
+          <div class="fb-metric">
+            <div class="fb-metric-label" data-i18n="fb-scale-label">首批规模</div>
+            <div class="fb-metric-value" id="fb-scale">-</div>
+            <div class="fb-metric-unit">台</div>
+          </div>
+        </div>
+        <div class="fb-continuation" id="fb-continuation">
+          <div class="fb-contr-icon">🚀</div>
+          <div class="fb-contr-text" data-i18n="fb-contr-text">
+            <strong>持续扩张 = 更快回本</strong><br>
+            <span>首批回本后，继续铺设第2、3批设备，边际成本更低（团队已成型、渠道已打通），回本周期将显著缩短。</span>
+          </div>
+        </div>
+        <div class="fb-note" data-i18n="fb-note">
+          ⚠️ 以上数据基于首批设备静态测算，未计入持续扩张带来的规模效应与运营效率提升
         </div>
       </div>
 
@@ -610,6 +708,15 @@
         <button class="btn-secondary" onclick="goToPage('page-team')">
           <span data-i18n="btn-back-params">← 返回修改参数</span>
         </button>
+      </div>
+
+      <!-- 官网引流 -->
+      <div class="website-section">
+        <div class="website-text" data-i18n="website-text">了解玖果科技完整解决方案</div>
+        <a class="website-link" href="https://www.jiuguotech.com" target="_blank" rel="noopener">
+          <span data-i18n="website-link-text">访问官网 www.jiuguotech.com</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
       </div>
 
       <div class="key-vars">

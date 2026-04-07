@@ -1861,12 +1861,186 @@ html, body {
   .metric-value {
     font-size: 20px;
   }
-  
+
   .radio-group {
     gap: 8px;
   }
-  
+
   .radio-card {
     padding: 12px;
   }
+}
+
+/* === 首批设备盈亏分析卡片 === */
+.first-batch-card {
+  background: linear-gradient(135deg, #FFF9EE 0%, #FFF5DC 100%);
+  border: 1px solid rgba(201, 149, 43, 0.2);
+  border-radius: var(--radius-xl);
+  padding: 24px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-gold);
+}
+
+.first-batch-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.fb-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  background: rgba(201, 149, 43, 0.15);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.fb-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.fb-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.fb-metrics {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  padding: 20px 12px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.fb-metric {
+  flex: 1;
+  text-align: center;
+}
+
+.fb-metric-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+}
+
+.fb-metric-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-heading);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.fb-metric-value.primary { color: var(--primary); }
+.fb-metric-value.danger { color: var(--danger); }
+
+.fb-metric-unit {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.fb-metric-divider {
+  width: 1px;
+  height: 48px;
+  background: var(--border-light);
+}
+
+.fb-continuation {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: rgba(45, 157, 120, 0.08);
+  border: 1px solid rgba(45, 157, 120, 0.2);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.fb-contr-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.fb-contr-text {
+  font-size: 12px;
+  color: #1A5C44;
+  line-height: 1.6;
+}
+
+.fb-contr-text strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.fb-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.fb-payback-note {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* === 官网引流区块 === */
+.website-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.website-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+}
+
+.website-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 10px 20px;
+  background: var(--accent-light);
+  border-radius: var(--radius-md);
+  transition: all 0.25s ease;
+}
+
+.website-link:hover {
+  background: rgba(201, 149, 43, 0.15);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-gold);
+}
+
+.website-link svg {
+  transition: transform 0.25s ease;
+}
+
+.website-link:hover svg {
+  transform: translate(2px, -2px);
 }
