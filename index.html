@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>海外共享充电宝项目测算工具 | Juugo Tech</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <header class="header-bar">
+    <div class="header-brand">
+      <img class="brand-logo" src="logo图标.png" alt="Juugo Tech">
+      <div class="brand-text">
+        <div class="brand-name">Juugo Tech</div>
+        <div class="brand-sub">Global Power Bank Solutions</div>
+      </div>
+    </div>
+    <div class="lang-switch">
+      <button class="lang-btn active" id="lang-zh" onclick="switchLang('zh')">中文</button>
+      <button class="lang-btn" id="lang-en" onclick="switchLang('en')">EN</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ========== 页面1: 封面页 ========== -->
+    <div id="page-cover" class="page active">
+      <div class="hero-section">
+        <div class="hero-badge" data-i18n="hero-badge">OVERSEAS POWER BANK ROI ESTIMATOR</div>
+        <h1 class="hero-title" data-i18n="hero-title">海外共享充电宝<br>项目测算工具</h1>
+        <p class="hero-subtitle" data-i18n="hero-subtitle">输入关键参数，快速判断项目回本周期、收益潜力与风险等级</p>
+
+        <div class="hero-features">
+          <div class="feature-item">
+            <div class="feature-icon">📊</div>
+            <div class="feature-text" data-i18n="feature-1">投放节奏<br>模型测算</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">💰</div>
+            <div class="feature-text" data-i18n="feature-2">收益潜力<br>评估</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">⚠️</div>
+            <div class="feature-text" data-i18n="feature-3">风险等级<br>提示</div>
+          </div>
+        </div>
+
+        <div class="pro-card">
+          <div class="pro-card-title" data-i18n="pro-card-title">专业说明</div>
+          <div class="pro-card-content" data-i18n="pro-card-content">
+            这不是简单公式计算，而是基于共享充电宝海外项目的核心经营逻辑搭建，包括投放节奏、单台收入、分成结构、团队效率与本地化成本等关键因素。
+          </div>
+        </div>
+
+        <div class="pro-tip">
+          <div class="pro-tip-content">
+            <strong data-i18n="applicable-label">适用场景：</strong>
+            <span data-i18n="applicable-content">东南亚、中东、日韩、欧美、中亚、海外本地化项目评估</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="goToPage('page-basic')">
+          <span data-i18n="btn-start">开始测算</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ========== 页面2: 基础信息 ========== -->
+    <div id="page-basic" class="page">
+      <div class="step-indicator">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+      <div class="step-progress" data-i18n="step-1">第 1 / 5 步 · 项目基础</div>
+      <div class="progress-bar"><div class="progress-fill" style="width: 20%"></div></div>
+
+      <div class="form-section">
+        <h2 class="form-section-title" data-i18n="page-basic-title">项目基础信息</h2>
+        <p class="form-section-subtitle" data-i18n="page-basic-subtitle">帮助我们了解您的项目背景，以便进行更精准的测算</p>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-country">您的目标国家 / 市场 <span class="required-star">*</span></label>
+          <select class="form-select" id="country" onchange="onCountryChange()">
+            <option value="" data-i18n="select-country-placeholder">请选择目标市场</option>
+            <optgroup label="🌏 东南亚">
+              <option value="vietnam" data-income-min="120" data-income-max="300">越南 Vietnam</option>
+              <option value="indonesia" data-income-min="120" data-income-max="300">印尼 Indonesia</option>
+              <option value="philippines" data-income-min="120" data-income-max="300">菲律宾 Philippines</option>
+              <option value="thailand" data-income-min="120" data-income-max="300">泰国 Thailand</option>
+              <option value="malaysia" data-income-min="200" data-income-max="500">马来西亚 Malaysia</option>
+              <option value="singapore" data-income-min="400" data-income-max="800">新加坡 Singapore</option>
+            </optgroup>
+            <optgroup label="🌏 日韩">
+              <option value="japan" data-income-min="500" data-income-max="1000">日本 Japan</option>
+              <option value="korea" data-income-min="500" data-income-max="1000">韩国 Korea</option>
+            </optgroup>
+            <optgroup label="🌏 中东">
+              <option value="uae" data-income-min="400" data-income-max="800">阿联酋 UAE</option>
+              <option value="saudi" data-income-min="400" data-income-max="800">沙特 Saudi Arabia</option>
+              <option value="qatar" data-income-min="400" data-income-max="800">卡塔尔 Qatar</option>
+              <option value="middle-east-other" data-income-min="300" data-income-max="600">中东其他地区</option>
+            </optgroup>
+            <optgroup label="🌏 中亚">
+              <option value="kazakhstan" data-income-min="200" data-income-max="500">哈萨克斯坦 Kazakhstan</option>
+              <option value="uzbekistan" data-income-min="150" data-income-max="400">乌兹别克斯坦 Uzbekistan</option>
+              <option value="central-asia-other" data-income-min="150" data-income-max="400">中亚其他地区</option>
+            </optgroup>
+            <optgroup label="🌏 欧美">
+              <option value="europe" data-income-min="600" data-income-max="1200">欧洲 Europe</option>
+              <option value="usa" data-income-min="600" data-income-max="1200">北美 USA / Canada</option>
+            </optgroup>
+            <optgroup label="🌏 非洲">
+              <option value="north-africa" data-income-min="200" data-income-max="600">北非 Egypt / Morocco</option>
+              <option value="africa-south" data-income-min="150" data-income-max="400">南非 South Africa</option>
+              <option value="africa-other" data-income-min="100" data-income-max="300">非洲其他地区</option>
+            </optgroup>
+            <optgroup label="🌏 南美">
+              <option value="brazil" data-income-min="200" data-income-max="500">巴西 Brazil</option>
+              <option value="south-america-other" data-income-min="150" data-income-max="400">南美其他地区</option>
+            </optgroup>
+            <option value="other">其他市场</option>
+          </select>
+          <div id="other-country-input" style="display: none; margin-top: 12px;">
+            <input type="text" class="form-input" id="other-country" data-i18n-placeholder="placeholder-other-country" placeholder="请输入目标国家名称">
+          </div>
+          <div class="form-hint" data-i18n="hint-country">不同国家的支付、点位分成和人工效率差异很大，会直接影响模型结果</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-city-type">投放范围</label>
+          <div class="select-group" id="city-type">
+            <div class="select-btn" data-value="single" onclick="selectOption('city-type', this)">
+              <span data-i18n="opt-single-city">单城市</span>
+            </div>
+            <div class="select-btn" data-value="multi" onclick="selectOption('city-type', this)">
+              <span data-i18n="opt-multi-city">跨城市</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-stage">当前项目阶段</label>
+          <div class="select-group" id="stage">
+            <div class="select-btn" data-value="research" onclick="selectOption('stage', this)">
+              <span data-i18n="stage-research">调研阶段</span>
+            </div>
+            <div class="select-btn" data-value="preparing" onclick="selectOption('stage', this)">
+              <span data-i18n="stage-preparing">准备启动</span>
+            </div>
+            <div class="select-btn" data-value="resources" onclick="selectOption('stage', this)">
+              <span data-i18n="stage-resources">已有资源准备落地</span>
+            </div>
+            <div class="select-btn" data-value="operating" onclick="selectOption('stage', this)">
+              <span data-i18n="stage-operating">已在运营，想优化</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-scale">预计首批投放规模</label>
+          <div class="select-group" id="scale">
+            <div class="select-btn" data-value="100" onclick="selectOption('scale', this)">
+              <span data-i18n="scale-under-100">100台以内</span>
+            </div>
+            <div class="select-btn" data-value="300" onclick="selectOption('scale', this)">
+              <span data-i18n="scale-100-500">100-500台</span>
+            </div>
+            <div class="select-btn" data-value="750" onclick="selectOption('scale', this)">
+              <span data-i18n="scale-500-1000">500-1000台</span>
+            </div>
+            <div class="select-btn" data-value="1000" onclick="selectOption('scale', this)">
+              <span data-i18n="scale-over-1000">1000台以上</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-investment">计划总投入资金量</label>
+          <div class="slider-container">
+            <div class="slider-value" id="investment-display">100<span data-i18n="unit-wan">万元</span></div>
+            <input type="range" class="slider" id="total-investment" min="50" max="500" value="100" step="5"
+              oninput="updateInvestmentDisplay(this.value)">
+            <div class="slider-labels">
+              <span data-i18n="slider-min-50">50万</span>
+              <span>275万</span>
+              <span data-i18n="slider-max-500">500万</span>
+            </div>
+          </div>
+          <div class="form-hint" data-i18n="hint-investment">包含设备采购、首批部署、运营备用金等总预算</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-mode">铺设方式</label>
+          <div class="select-group" id="mode">
+            <div class="select-btn" data-value="direct" onclick="selectOption('mode', this)">
+              <span data-i18n="mode-direct">自营直营</span>
+            </div>
+            <div class="select-btn" data-value="agent" onclick="selectOption('mode', this)">
+              <span data-i18n="mode-agent">代理招商</span>
+            </div>
+            <div class="select-btn" data-value="mixed" onclick="selectOption('mode', this)">
+              <span data-i18n="mode-mixed">直营+代理混合</span>
+            </div>
+            <div class="select-btn" data-value="unknown" onclick="selectOption('mode', this)">
+              <span data-i18n="mode-unknown">还未确定</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-nav show">
+        <div class="nav-buttons">
+          <button class="nav-btn prev" onclick="goToPage('page-cover')">
+            <span data-i18n="btn-prev">上一步</span>
+          </button>
+          <button class="nav-btn next" id="btn-basic-next" onclick="validateAndGo('page-basic', 'page-operation')">
+            <span data-i18n="btn-next">下一步</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 页面3: 核心经营参数 ========== -->
+    <div id="page-operation" class="page">
+      <div class="step-indicator">
+        <div class="step-dot active"></div>
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+      <div class="step-progress" data-i18n="step-2">第 2 / 5 步 · 经营参数</div>
+      <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
+
+      <div class="form-section">
+        <h2 class="form-section-title" data-i18n="page-operation-title">核心经营参数</h2>
+        <p class="form-section-subtitle" data-i18n="page-operation-subtitle">这些参数直接影响项目的盈利模型，请如实填写</p>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-income">预估单台月收入（元 / 台 / 月） <span class="required-star">*</span></label>
+          <input type="number" class="form-input" id="monthly-income" data-i18n-placeholder="placeholder-income" placeholder="根据国家自动带出参考值" oninput="checkIncomeValue()">
+          <div class="form-hint" id="income-hint" data-i18n="hint-income">请先选择目标市场，系统将自动给出建议区间</div>
+          <div id="income-alert" class="alert alert-warning" data-i18n="alert-income-high">
+            您填写的单台收入偏高，可能导致结果过于乐观
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-split">商户 / 场地方分成比例</label>
+          <div class="slider-container">
+            <div class="slider-value" id="split-value">15<span>%</span></div>
+            <input type="range" class="slider" id="split-ratio" min="10" max="40" value="15" oninput="updateSliderValue('split', this.value)">
+            <div class="slider-labels">
+              <span data-i18n="split-good">10%（优质场景）</span>
+              <span>25%</span>
+              <span data-i18n="split-high">40%+（高成本场地）</span>
+            </div>
+          </div>
+          <div class="form-hint" data-i18n="hint-split">分成比例越高，留给自己的利润空间越小。建议优质渠道控制在20%以内</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-hardware">单台硬件综合投入成本（元） <span class="required-star">*</span></label>
+          <input type="number" class="form-input" id="hardware-cost" data-i18n-placeholder="placeholder-hardware" placeholder="包含底座、物料、运输等" value="800">
+          <div class="form-hint" data-i18n="hint-hardware">包含设备底座、宣传物料、国内运输等综合成本</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-install">单台安装 / 部署成本（元）</label>
+          <input type="number" class="form-input" id="install-cost" data-i18n-placeholder="placeholder-install" placeholder="本地安装人工成本" value="20">
+          <div class="form-hint" data-i18n="hint-install">本地安装人工、差旅等成本</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-system-cost">系统与支付综合成本比例</label>
+          <div class="select-group" id="system-cost-select">
+            <div class="select-btn" data-value="0.03" onclick="selectOption('system-cost-select', this)">3%</div>
+            <div class="select-btn active" data-value="0.05" onclick="selectOption('system-cost-select', this)">
+              <span data-i18n="sys-cost-5">5%（默认）</span>
+            </div>
+            <div class="select-btn" data-value="0.08" onclick="selectOption('system-cost-select', this)">8%</div>
+            <div class="select-btn" data-value="0.10" onclick="selectOption('system-cost-select', this)">10%</div>
+          </div>
+          <div class="form-hint" data-i18n="hint-system-cost">支付通道、服务器、短信、本地化运维等综合成本比例</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-local-payment">是否清楚本地服务器与支付通道价格？</label>
+          <div class="select-group" id="local-payment-known">
+            <div class="select-btn" data-value="yes" onclick="selectOption('local-payment-known', this)">
+              <span data-i18n="local-pay-know">清楚，按实际填写</span>
+            </div>
+            <div class="select-btn active" data-value="default" onclick="selectOption('local-payment-known', this)">
+              <span data-i18n="local-pay-default">不清楚，按系统默认</span>
+            </div>
+          </div>
+          <div class="form-hint" id="local-payment-hint" data-i18n="hint-local-payment">系统默认按5%综合比例测算，包含支付通道、服务器、短信等</div>
+        </div>
+      </div>
+
+      <div class="bottom-nav show">
+        <div class="nav-buttons">
+          <button class="nav-btn prev" onclick="goToPage('page-basic')">
+            <span data-i18n="btn-prev">上一步</span>
+          </button>
+          <button class="nav-btn next" id="btn-operation-next" onclick="validateAndGo('page-operation', 'page-team')">
+            <span data-i18n="btn-next">下一步</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 页面4: 团队与运营参数 ========== -->
+    <div id="page-team" class="page">
+      <div class="step-indicator">
+        <div class="step-dot active"></div>
+        <div class="step-dot active"></div>
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+      <div class="step-progress" data-i18n="step-3">第 3 / 5 步 · 铺设策略</div>
+      <div class="progress-bar"><div class="progress-fill" style="width: 60%"></div></div>
+
+      <div class="form-section">
+        <h2 class="form-section-title" data-i18n="page-team-title">铺设策略选择</h2>
+        <p class="form-section-subtitle" data-i18n="page-team-subtitle">海外铺设与国内不同，渠道策略至关重要</p>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-channel-ratio">BD铺设 vs 渠道铺设占比</label>
+          <div class="slider-container">
+            <div class="slider-value" id="channel-value">80<span data-i18n="channel-display">% 渠道 | 20% BD</span></div>
+            <input type="range" class="slider" id="channel-ratio" min="0" max="100" value="80" oninput="updateChannelSlider(this.value)">
+            <div class="slider-labels">
+              <span data-i18n="channel-pure-bd">纯BD铺设</span>
+              <span data-i18n="channel-50-50">各50%</span>
+              <span data-i18n="channel-pure-channel">纯渠道铺设</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pro-tip danger">
+          <div class="pro-tip-content">
+            <strong data-i18n="bd-warning-title">⚠️ 重要提示：</strong>
+            <span data-i18n="bd-warning-content">海外市场与国内不同，用户习惯尚未形成，<strong>BD铺设效率低、成本高</strong>，且人员管理难度大。建议优先采用大渠道/连锁合作模式，可快速起量并降低运营成本。</span>
+          </div>
+        </div>
+
+        <div class="bd-warning-box" id="bd-warning-box">
+          <div class="bd-warning-icon">⚠️</div>
+          <div class="bd-warning-text">
+            <strong data-i18n="bd-ratio-high">当前BD铺设比例偏高</strong><br>
+            <span data-i18n="bd-ratio-suggestion">海外BD铺设建议控制在</span><span id="bd-ratio-alert">20%</span>
+            <span data-i18n="bd-ratio-suggestion2">以内，优先走大渠道/连锁合作模式。</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-bd-capacity">每位BD每月可铺设台数</label>
+          <input type="number" class="form-input" id="bd-capacity" data-i18n-placeholder="placeholder-bd-capacity" placeholder="每人每月可铺设的台数" value="15">
+          <div class="form-hint" data-i18n="hint-bd-capacity">海外BD效率参考值：10-20台/月/人（远低于国内30-50台）</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-maintenance-capacity">每位外勤运维可管理台数</label>
+          <input type="number" class="form-input" id="maintenance-capacity" data-i18n-placeholder="placeholder-maintenance" placeholder="每人可管理的设备数量" value="600">
+          <div class="form-hint" data-i18n="hint-maintenance">参考值：400-800台/人，视覆盖密度与城市交通而定</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-admin-capacity">每位内勤管理员可管理台数</label>
+          <input type="number" class="form-input" id="admin-capacity" data-i18n-placeholder="placeholder-admin" placeholder="每人可管理的设备数量" value="800">
+          <div class="form-hint" data-i18n="hint-admin">参考值：600-1000台/人，含订单、客服、数据、结算等</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-labor-cost">平均人力成本（元 / 人 / 月） <span class="required-star">*</span></label>
+          <input type="number" class="form-input" id="labor-cost" data-i18n-placeholder="placeholder-labor" placeholder="含工资、社保、公积金等" value="8050">
+          <div class="form-hint" data-i18n="hint-labor">需包含管理损耗，建议按当地实际工资水平估算</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="label-overhead">是否计入办公/仓储/车辆等基础运营成本</label>
+          <div class="select-group" id="include-overhead">
+            <div class="select-btn active" data-value="yes" onclick="selectOption('include-overhead', this)">
+              <span data-i18n="opt-yes">是</span>
+            </div>
+            <div class="select-btn" data-value="no" onclick="selectOption('include-overhead', this)">
+              <span data-i18n="opt-no">否</span>
+            </div>
+            <div class="select-btn" data-value="auto" onclick="selectOption('include-overhead', this)">
+              <span data-i18n="opt-auto">按系统默认</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-nav show">
+        <div class="nav-buttons">
+          <button class="nav-btn prev" onclick="goToPage('page-operation')">
+            <span data-i18n="btn-prev">上一步</span>
+          </button>
+          <button class="nav-btn next" id="btn-team-next" onclick="validateAndGo('page-team', null)">
+            <span data-i18n="btn-view-result">查看测算结果</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 页面5: 结果页 ========== -->
+    <div id="page-result" class="page">
+      <div class="result-header">
+        <div class="result-badge" id="result-badge">可做</div>
+        <h2 class="result-title" data-i18n="result-title">项目初步判断</h2>
+        <p class="result-subtitle" data-i18n="result-subtitle">基于您填写参数的初步测算结果</p>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label" data-i18n="metric-investment">预计投入资金</div>
+          <div class="metric-value primary" id="total-investment-display">100<span class="metric-unit" data-i18n="unit-wan">万元</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" data-i18n="metric-payback">预计回本周期</div>
+          <div class="metric-value" id="payback-period">12-16<span class="metric-unit" data-i18n="unit-months">个月</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" data-i18n="metric-profit">月利润潜力</div>
+          <div class="metric-value" id="monthly-profit">中等</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" data-i18n="metric-fund">前期资金压力</div>
+          <div class="metric-value">
+            <div class="risk-indicator">
+              <div class="risk-dot medium" id="fund-pressure-dot"></div>
+              <span id="fund-pressure-text">中等</span>
+            </div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" data-i18n="metric-complexity">运营复杂度</div>
+          <div class="metric-value">
+            <div class="risk-indicator">
+              <div class="risk-dot" id="complexity-dot"></div>
+              <span id="complexity-text">中等</span>
+            </div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" data-i18n="metric-team">所需团队规模</div>
+          <div class="metric-value" id="team-size-display">-</div>
+        </div>
+      </div>
+
+      <!-- ========== 最低盈利台数分析 ========== -->
+      <div class="min-scale-card" id="min-scale-card">
+        <div class="min-scale-header">
+          <div class="min-scale-title" data-i18n="min-scale-title">📊 最低盈利规模分析</div>
+          <div class="min-scale-subtitle" data-i18n="min-scale-subtitle">共享充电宝存在"最低运营门槛"，低于此规模团队难以养活</div>
+        </div>
+
+        <div class="min-scale-comparison">
+          <div class="msc-item">
+            <div class="msc-label" data-i18n="msc-your-scale">您选择的规模</div>
+            <div class="msc-value primary" id="min-scale-current">-</div>
+          </div>
+          <div class="msc-arrow">→</div>
+          <div class="msc-item">
+            <div class="msc-label" data-i18n="msc-threshold">最低盈利门槛</div>
+            <div class="msc-value danger" id="min-scale-required">-</div>
+          </div>
+        </div>
+
+        <div class="min-scale-status" id="min-scale-status">
+          <span class="ms-status-icon">⏳</span>
+          <span class="ms-status-text" data-i18n="msc-calculating">计算中...</span>
+        </div>
+
+        <div class="min-scale-progress">
+          <div class="msp-label" data-i18n="msc-progress-label">当前规模达标率</div>
+          <div class="msp-bar-bg">
+            <div class="msp-bar-fill" id="min-scale-bar" style="width: 0%"></div>
+          </div>
+          <div class="msp-hint" data-i18n="msc-progress-hint">达标率100% = 刚好能养活基础团队</div>
+        </div>
+
+        <div class="min-scale-warning" id="min-scale-warning" style="display: none;">
+          加载中...
+        </div>
+
+        <div class="min-scale-explain">
+          <div class="ms-explains-title" data-i18n="msc-why-title">💡 为什么有最低规模门槛？</div>
+          <div class="ms-explain-item">
+            <span class="ms-explain-icon">1</span>
+            <span data-i18n="msc-why-1">共享充电宝需要<strong>完整的运营团队</strong>：BD拓展 + 运维巡检 + 客服结算 + 管理</span>
+          </div>
+          <div class="ms-explain-item">
+            <span class="ms-explain-icon">2</span>
+            <span data-i18n="msc-why-2">团队成本<strong>相对固定</strong>，不会因为设备少就少很多人</span>
+          </div>
+          <div class="ms-explain-item">
+            <span class="ms-explain-icon">3</span>
+            <span data-i18n="msc-why-3">台数太少 → 营收覆盖不了团队成本 → <strong>亏损</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="analysis-section">
+        <div class="analysis-card">
+          <div class="analysis-title">
+            <span class="icon">🎯</span>
+            <span data-i18n="analysis-profit">盈利核心判断</span>
+          </div>
+          <div class="analysis-content" id="profit-analysis">
+            当前模型的盈利基础主要依赖于单台收入是否稳定达到目标值。
+          </div>
+        </div>
+
+        <div class="analysis-card">
+          <div class="analysis-title">
+            <span class="icon">⚠️</span>
+            <span data-i18n="analysis-risk">风险提示</span>
+          </div>
+          <div class="analysis-content" id="risk-analysis">
+            <ul>
+              <li data-i18n="risk-1">您的模型对商户分成比例较为敏感，若实际场地成本上升，回本周期会明显拉长</li>
+              <li data-i18n="risk-2">需确认当地BD和运维能力是否匹配投放规模</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="analysis-card">
+          <div class="analysis-title">
+            <span class="icon">💡</span>
+            <span data-i18n="analysis-suggestion">建议动作</span>
+          </div>
+          <div class="analysis-content" id="suggestion-analysis">
+            <ul>
+              <li data-i18n="suggestion-1">建议先以单城市、300-500台进行小规模验证，降低试错成本</li>
+              <li data-i18n="suggestion-2">优先梳理支付、商户分成和人员模型</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="cost-breakdown">
+        <div class="cost-breakdown-title" data-i18n="cost-title">📋 成本结构速览（单月）</div>
+        <div class="cost-row" id="cost-row-1">
+          <span class="cost-name" data-i18n="cost-labor">人力成本（团队薪资）</span>
+          <span class="cost-value" id="cost-labor">-</span>
+        </div>
+        <div class="cost-row" id="cost-row-2">
+          <span class="cost-name" data-i18n="cost-overhead">运营成本（办公/仓储/车辆）</span>
+          <span class="cost-value" id="cost-overhead">-</span>
+        </div>
+        <div class="cost-row" id="cost-row-3">
+          <span class="cost-name" data-i18n="cost-split">商户/场地方分成</span>
+          <span class="cost-value" id="cost-split">-</span>
+        </div>
+        <div class="cost-row" id="cost-row-4">
+          <span class="cost-name" data-i18n="cost-system">系统与支付通道成本</span>
+          <span class="cost-value" id="cost-system">-</span>
+        </div>
+        <div class="cost-row total" id="cost-row-5">
+          <span class="cost-name" data-i18n="cost-total">月总成本</span>
+          <span class="cost-value" id="cost-total">-</span>
+        </div>
+        <div class="cost-row highlight" id="cost-row-6">
+          <span class="cost-name" data-i18n="cost-revenue">月毛收入（扣除分成前）</span>
+          <span class="cost-value" id="cost-revenue">-</span>
+        </div>
+      </div>
+
+      <div class="locked-content">
+        <div class="locked-overlay">
+          <div class="locked-items">
+            <div class="locked-item">
+              <div class="locked-icon">🔒</div>
+              <span data-i18n="locked-1">详细分阶段扩张建议</span>
+            </div>
+            <div class="locked-item">
+              <div class="locked-icon">🔒</div>
+              <span data-i18n="locked-2">现金流压力曲线分析</span>
+            </div>
+            <div class="locked-item">
+              <div class="locked-icon">🔒</div>
+              <span data-i18n="locked-3">目标国家本地化落地建议</span>
+            </div>
+            <div class="locked-item">
+              <div class="locked-icon">🔒</div>
+              <span data-i18n="locked-4">代理/直营模式优劣对比</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta-section">
+        <div class="cta-title" data-i18n="cta-title">获取完整版报告</div>
+        <div class="cta-subtitle" data-i18n="cta-subtitle">
+          以上是初步测算结果。完整版包含详细扩张节奏建议、现金流曲线、目标国家本地化落地指南，欢迎扫码领取。
+        </div>
+        <button class="btn-primary cta-btn" onclick="goToPage('page-contact')">
+          <span data-i18n="btn-get-report">📱 扫码获取完整版报告</span>
+        </button>
+        <div class="cta-or" data-i18n="cta-or">或</div>
+        <button class="btn-secondary" onclick="goToPage('page-team')">
+          <span data-i18n="btn-back-params">← 返回修改参数</span>
+        </button>
+      </div>
+
+      <div class="key-vars">
+        <div class="key-vars-title" data-i18n="key-vars-title">我们通常会重点复核的4个变量</div>
+        <div class="key-var-item">
+          <div class="key-var-num">1</div>
+          <span data-i18n="key-var-1">单台月收入是否真实达到目标值（建议取保守值）</span>
+        </div>
+        <div class="key-var-item">
+          <div class="key-var-num">2</div>
+          <span data-i18n="key-var-2">商户分成是否可控在实际范围内（优先控在20%以内）</span>
+        </div>
+        <div class="key-var-item">
+          <div class="key-var-num">3</div>
+          <span data-i18n="key-var-3">团队效率是否匹配投放规模（海外BD效率远低于国内）</span>
+        </div>
+        <div class="key-var-item">
+          <div class="key-var-num">4</div>
+          <span data-i18n="key-var-4">本地化系统成本是否被低估（支付/短信/服务器）</span>
+        </div>
+      </div>
+
+      <div class="disclaimer" data-i18n="disclaimer">
+        本结果基于初步参数测算，不代表最终投资建议<br>
+        真实落地时，需结合国家支付、税务和商户结构进一步校准
+      </div>
+    </div>
+
+    <!-- ========== 页面6: 联系方式页（直接展示二维码） ========== -->
+    <div id="page-contact" class="page">
+      <div class="contact-header">
+        <div class="contact-badge">COMPLETE REPORT</div>
+        <h2 class="contact-title" data-i18n="contact-title">扫码领取完整版报告</h2>
+        <p class="contact-subtitle" data-i18n="contact-subtitle">
+          包含：详细扩张节奏建议 · 现金流压力曲线 · 目标国家本地化落地指南 · 直营/代理模式对比
+        </p>
+      </div>
+
+      <div class="qr-grid">
+        <div class="qr-card">
+          <div class="qr-card-title" data-i18n="qr-wechat-title">🇨🇳 微信咨询</div>
+          <div class="qr-image" id="wechat-qr">
+            <img src="weixin.png" alt="WeChat QR Code" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="qr-placeholder" style="display:none;">
+              <div class="qr-placeholder-icon">💬</div>
+              <div class="qr-placeholder-text" data-i18n="qr-wechat-placeholder">微信二维码</div>
+              <div class="qr-placeholder-hint" data-i18n="qr-wechat-hint">请替换为您的微信二维码图片</div>
+            </div>
+          </div>
+          <div class="qr-info">
+            <div class="qr-info-title" data-i18n="qr-add-note">添加时备注</div>
+            <div class="qr-info-value" data-i18n="qr-note-calc">「测算结果」</div>
+          </div>
+        </div>
+
+        <div class="qr-card">
+          <div class="qr-card-title" data-i18n="qr-whatsapp-title">🌏 WhatsApp 咨询</div>
+          <div class="qr-image" id="whatsapp-qr">
+            <img src="whatsapp.png" alt="WhatsApp QR Code" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="qr-placeholder" style="display:none;">
+              <div class="qr-placeholder-icon">📱</div>
+              <div class="qr-placeholder-text" data-i18n="qr-whatsapp-placeholder">WhatsApp 二维码</div>
+              <div class="qr-placeholder-hint" data-i18n="qr-whatsapp-hint">请替换为您的WhatsApp二维码图片</div>
+            </div>
+          </div>
+          <div class="qr-info">
+            <div class="qr-info-title" data-i18n="qr-note-title">备注信息</div>
+            <div class="qr-info-value" data-i18n="qr-note-report">「测算报告」</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="what-you-get">
+        <div class="wyg-title" data-i18n="wyg-title">📦 领取后您将获得</div>
+        <div class="wyg-item">
+          <div class="wyg-icon">✓</div>
+          <span data-i18n="wyg-1">适合您目标国家的详细财务模型（可编辑Excel版）</span>
+        </div>
+        <div class="wyg-item">
+          <div class="wyg-icon">✓</div>
+          <span data-i18n="wyg-2">分阶段扩张节奏建议（从0到500台的具体步骤）</span>
+        </div>
+        <div class="wyg-item">
+          <div class="wyg-icon">✓</div>
+          <span data-i18n="wyg-3">目标国家本地化落地checklist（支付/短信/税务）</span>
+        </div>
+        <div class="wyg-item">
+          <div class="wyg-icon">✓</div>
+          <span data-i18n="wyg-4">1对1项目诊断机会（30分钟语音）</span>
+        </div>
+      </div>
+
+      <div class="back-link">
+        <button class="btn-secondary" onclick="goToPage('page-result')">
+          <span data-i18n="btn-back-result">← 返回查看结果</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="calculator.js"></script>
+</body>
+</html>
