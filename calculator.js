@@ -460,10 +460,15 @@ function calculateResults(params) {
     profitLevel = '亏损';
   }
 
+  // ===== 13. 最低准备资金 = 硬件投入 + 开办费 + 6个月运营备用金 =====
+  const operatingReserve = totalMonthlyCost * 6;
+  const minRequiredCapital = totalHardwareInvestment + startUpCost + operatingReserve;
+
   return {
     investment: Math.round(investment),
     paybackMonths,
     breakevenMonth,
+    minRequiredCapital: Math.round(minRequiredCapital),
     monthlyProfit: Math.round(monthlyProfit),
     monthlyNetIncome: Math.round(monthlyNetIncome),
     monthlyGrossIncome: Math.round(monthlyGrossIncome),
@@ -725,6 +730,21 @@ function updateResultUI(params, results, analysis, viability) {
 
     // 首批规模
     document.getElementById('fb-scale').textContent = params.scale;
+  }
+
+  // ========== 最低准备资金 ==========
+  const mcCard = document.getElementById('min-capital-card');
+  if (mcCard) {
+    mcCard.style.display = 'block';
+    const capital = results.minRequiredCapital;
+    document.getElementById('min-capital-value').textContent = formatMoney(capital);
+
+    // 资金构成明细
+    const hw = results.totalHardwareInvestment;
+    const startUp = 50000;
+    const reserve = capital - hw - startUp;
+    document.getElementById('mc-breakdown').textContent =
+      '硬件 ' + formatMoney(hw) + ' + 开办 ' + formatMoney(startUp) + ' + 6月运营备用 ' + formatMoney(reserve);
   }
 
   // ========== 最低盈利台数模块（仅在不健康时显示） ==========
