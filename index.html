@@ -3,67 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>海外共享充电宝项目测算工具 | Juugo Tech</title>
 
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="海外共享充电宝项目ROI测算工具。输入关键参数，快速评估东南亚、中东、日韩、欧美市场的回本周期、收益潜力与风险等级。支持首批设备盈亏分析和规模化扩张建议。">
-  <meta name="keywords" content="shared power bank, power bank rental business, phone charging kiosk, mobile charging station, overseas power bank, power bank sharing business, power bank ROI calculator, portable charger rental, shared charging station, mobile phone charging rental, 共享充电宝, 海外共享充电宝, 充电宝投放">
-  <meta name="author" content="Juugo Tech">
-  <meta name="robots" content="index, follow">
+  <!-- 基础SEO -->
+  <title id="seo-title">海外共享充电宝项目测算工具 | Juugo Tech</title>
+  <meta name="description" id="seo-description" content="输入关键参数，快速评估海外共享充电宝项目的回本周期、收益潜力与风险等级。支持东南亚、中东、日韩、欧美等市场。玖果科技提供全套软硬件+运营解决方案。">
+  <meta name="keywords" content="海外共享充电宝,东南亚共享充电宝,power bank rental business,shared power bank,共享充电宝加盟,充电宝租赁创业,移动充电站,power bank franchise,充电宝生意,共享充电宝ROI">
 
-  <!-- Open Graph / Social -->
+  <!-- OpenGraph -->
+  <meta property="og:title" id="og-title" content="海外共享充电宝项目测算工具 | Juugo Tech">
+  <meta property="og:description" id="og-description" content="输入关键参数，快速评估海外共享充电宝项目的回本周期、收益潜力与风险等级。支持东南亚、中东、日韩、欧美等市场。">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="海外共享充电宝项目测算工具 | Juugo Tech">
-  <meta property="og:description" content="输入关键参数，快速评估海外市场共享充电宝项目的回本周期、收益潜力与风险等级。首批设备盈亏分析，支持东南亚、中东、日韩、欧美市场。">
   <meta property="og:url" content="https://www.jiuguotech.com/calculator">
+  <meta property="og:image" content="https://www.jiuguotech.com/images/og-image.png">
   <meta property="og:site_name" content="Juugo Tech">
-  <meta property="og:image" content="https://www.jiuguotech.com/og-image.png">
-  <meta property="og:locale" content="zh_CN">
-  <meta property="og:locale:alternate" content="en_US">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Overseas Power Bank ROI Calculator | Juugo Tech">
-  <meta name="twitter:description" content="Calculate payback period, ROI potential and risk level for your overseas power bank rental business. Supports SE Asia, Middle East, Japan/Korea, Europe & US markets.">
+  <meta name="twitter:title" id="twitter-title" content="海外共享充电宝项目测算工具 | Juugo Tech">
+  <meta name="twitter:description" id="twitter-description" content="输入关键参数，快速评估海外共享充电宝项目的回本周期、收益潜力与风险等级。">
+  <meta name="twitter:image" content="https://www.jiuguotech.com/images/og-image.png">
 
-  <!-- Canonical -->
-  <link rel="canonical" href="https://www.jiuguotech.com/calculator">
+  <!-- 结构化数据 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "海外共享充电宝项目测算工具",
+    "alternateName": ["Overseas Power Bank ROI Calculator", "Power Bank Rental Business Calculator"],
+    "description": "输入关键参数，快速评估海外共享充电宝项目的回本周期、收益潜力与风险等级",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web Browser",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "CNY"
+    },
+    "keywords": "海外共享充电宝,东南亚共享充电宝,power bank rental business,shared power bank franchise,充电宝租赁创业"
+  }
+  </script>
 
-  <!-- Geo Tags for SEO -->
-  <meta name="geo.region" content="SG">
-  <meta name="geo.placename" content="Juugo Tech">
+  <!-- 英文版备用SEO（通过JS动态切换） -->
+  <link rel="alternate" hreflang="en" href="https://www.jiuguotech.com/calculator?lang=en">
+  <link rel="alternate" hreflang="zh" href="https://www.jiuguotech.com/calculator?lang=zh">
 
   <link rel="stylesheet" href="styles.css">
-
-  <!-- Auto Language Detection: switch to English for non-Chinese visitors -->
-  <script>
-    (function() {
-      var storedLang = localStorage.getItem('calcLang');
-      if (storedLang) {
-        window._autoLang = storedLang;
-        return;
-      }
-      // Use free ipapi.co for GeoIP detection
-      fetch('https://ipapi.co/json/')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          var countryCode = data && data.country_code;
-          // Chinese-speaking countries/regions: CN, TW, HK, MO, SG (if Chinese), MY
-          var zhRegions = ['CN', 'TW', 'HK', 'MO'];
-          if (zhRegions.indexOf(countryCode) === -1) {
-            window._autoLang = 'en';
-            // Will be picked up by JS init
-            var evt = new CustomEvent('autoLangDetect', { detail: 'en' });
-            document.dispatchEvent(evt);
-          } else {
-            window._autoLang = 'zh';
-          }
-        })
-        .catch(function() {
-          window._autoLang = 'zh';
-        });
-    })();
-  </script>
 </head>
 <body>
   <!-- 顶部导航 -->
@@ -303,8 +286,8 @@
           <label class="form-label" data-i18n="label-income">预估单台月收入（元 / 台 / 月） <span class="required-star">*</span></label>
           <input type="number" class="form-input" id="monthly-income" data-i18n-placeholder="placeholder-income" placeholder="根据国家自动带出参考值" oninput="checkIncomeValue()">
           <div class="form-hint" id="income-hint" data-i18n="hint-income">请先选择目标市场，系统将自动给出建议区间</div>
-          <div id="income-alert" class="alert alert-warning" data-i18n="alert-income-high">
-            您填写的单台收入偏高，可能导致结果过于乐观
+          <div id="income-alert" class="alert alert-warning">
+            <!-- 动态显示用户填写的数字 -->
           </div>
         </div>
 
@@ -331,7 +314,7 @@
         <div class="form-group">
           <label class="form-label" data-i18n="label-install">单台安装 / 部署成本（元）</label>
           <input type="number" class="form-input" id="install-cost" data-i18n-placeholder="placeholder-install" placeholder="本地安装人工成本" value="20">
-          <div class="form-hint" data-i18n="hint-install">本地安装人工、差旅等成本</div>
+          <div class="form-hint" data-i18n="hint-install">本地安装人工、交通等成本，根据国家不同有较大差异</div>
         </div>
 
         <div class="form-group">
@@ -420,8 +403,8 @@
 
         <div class="form-group">
           <label class="form-label" data-i18n="label-bd-capacity">每位BD每月可铺设台数</label>
-          <input type="number" class="form-input" id="bd-capacity" data-i18n-placeholder="placeholder-bd-capacity" placeholder="每人每月可铺设的台数" value="15">
-          <div class="form-hint" data-i18n="hint-bd-capacity">海外BD效率参考值：10-20台/月/人（远低于国内30-50台）</div>
+          <input type="number" class="form-input" id="bd-capacity" data-i18n-placeholder="placeholder-bd-capacity" placeholder="每人每月可铺设的台数" value="45">
+          <div class="form-hint" data-i18n="hint-bd-capacity">海外BD效率参考值30-60台/月/人（海外不同国家员工效率差异较大）</div>
         </div>
 
         <div class="form-group">
@@ -475,16 +458,53 @@
       <div class="result-header">
         <div class="result-badge" id="result-badge">可做</div>
         <h2 class="result-title" data-i18n="result-title">项目初步判断</h2>
-        <p class="result-subtitle" data-i18n="result-subtitle">基于您填写参数的初步测算结果</p>
+        <p class="result-subtitle" data-i18n="result-subtitle">基于您填写参数的初步测算结果 · 仅供参考</p>
+      </div>
+
+      <!-- ========== 首批设备落地盈亏分析（静态测算） ========== -->
+      <div class="first-batch-analysis" id="first-batch-analysis">
+        <div class="fba-title" data-i18n="fba-title">📊 首批设备落地盈亏分析</div>
+        <div class="fba-note" data-i18n="fba-note">静态测算（停止发展时）</div>
+        <div class="fba-grid">
+          <div class="fba-item">
+            <div class="fba-label" data-i18n="fba-breakeven-label">盈亏平衡点</div>
+            <div class="fba-value" id="breakeven-point">-</div>
+            <div class="fba-unit" data-i18n="fba-unit">台</div>
+          </div>
+          <div class="fba-item">
+            <div class="fba-label" data-i18n="fba-payback-label">首批回本周期</div>
+            <div class="fba-value" id="first-batch-payback">-</div>
+            <div class="fba-unit" id="first-batch-payback-unit" data-i18n="unit-months">个月</div>
+          </div>
+          <div class="fba-item">
+            <div class="fba-label" data-i18n="fba-scale-label">首批规模</div>
+            <div class="fba-value" id="first-batch-scale">-</div>
+            <div class="fba-unit" data-i18n="fba-unit">台</div>
+          </div>
+        </div>
+        <div class="fba-expansion-hint">
+          <span class="fba-expansion-icon">🚀</span>
+          <span data-i18n="fba-expansion-hint">持续扩张 = 更快回本</span>
+        </div>
+        <div class="fba-expansion-desc" data-i18n="fba-expansion-desc">
+          首批回本后，继续扩张的边际成本极低，新增设备几乎全是净利润，可显著加速整体回本
+        </div>
+      </div>
+
+      <!-- ========== 最低准备资金 ========== -->
+      <div class="min-fund-card" id="min-fund-card">
+        <div class="mf-label" data-i18n="mf-label">💰 最低准备资金</div>
+        <div class="mf-value" id="min-fund-display">-</div>
+        <div class="mf-hint" data-i18n="mf-hint">硬件投入 + 开办费5万 + 6个月运营备用金</div>
       </div>
 
       <div class="metrics-grid">
         <div class="metric-card">
           <div class="metric-label" data-i18n="metric-investment">预计投入资金</div>
-          <div class="metric-value primary" id="total-investment-display">100<span class="metric-unit" data-i18n="unit-wan">万元</span></div>
+          <div class="metric-value" id="total-investment-display">100<span class="metric-unit" data-i18n="unit-wan">万元</span></div>
         </div>
         <div class="metric-card">
-          <div class="metric-label" data-i18n="metric-payback">回本周期<span style="font-size:10px;color:var(--text-muted);font-weight:400">（停止发展）</span></div>
+          <div class="metric-label" data-i18n="metric-payback">预计回本周期</div>
           <div class="metric-value" id="payback-period">12-16<span class="metric-unit" data-i18n="unit-months">个月</span></div>
         </div>
         <div class="metric-card">
@@ -512,55 +532,6 @@
         <div class="metric-card">
           <div class="metric-label" data-i18n="metric-team">所需团队规模</div>
           <div class="metric-value" id="team-size-display">-</div>
-        </div>
-      </div>
-
-      <!-- ========== 首批设备盈亏分析（重点展示） ========== -->
-      <div class="first-batch-card" id="first-batch-card">
-        <div class="first-batch-header">
-          <div class="fb-badge" data-i18n="fb-badge">📌 首批设备 · 静态测算</div>
-          <div class="fb-title" data-i18n="fb-title">首批设备落地盈亏分析</div>
-          <div class="fb-subtitle" data-i18n="fb-subtitle">以下为仅落地首批设备的测算结果，持续扩张可加速回本</div>
-        </div>
-        <div class="fb-metrics">
-          <div class="fb-metric">
-            <div class="fb-metric-label" data-i18n="fb-breakeven-label">盈亏平衡点</div>
-            <div class="fb-metric-value danger" id="fb-breakeven">-</div>
-            <div class="fb-metric-unit" data-i18n="fb-months">个月</div>
-          </div>
-          <div class="fb-metric-divider"></div>
-          <div class="fb-metric">
-            <div class="fb-metric-label" data-i18n="fb-payback-label">首批回本周期</div>
-            <div class="fb-metric-value primary" id="fb-payback">-</div>
-            <div class="fb-metric-unit" data-i18n="fb-months">个月</div>
-            <div class="fb-payback-note" id="fb-payback-note">（停止发展时）</div>
-          </div>
-          <div class="fb-metric-divider"></div>
-          <div class="fb-metric">
-            <div class="fb-metric-label" data-i18n="fb-scale-label">首批规模</div>
-            <div class="fb-metric-value" id="fb-scale">-</div>
-            <div class="fb-metric-unit">台</div>
-          </div>
-        </div>
-        <!-- ========== 最低准备资金 ========== -->
-        <div class="min-capital-card" id="min-capital-card">
-          <div class="mc-badge">💰 最低准备资金</div>
-          <div class="mc-subtitle">包含硬件投入 + 开办费 + 6个月运营备用金</div>
-          <div class="mc-amount">
-            <span class="mc-value" id="min-capital-value">-</span>
-            <span class="mc-unit">元</span>
-          </div>
-          <div class="mc-breakdown" id="mc-breakdown"></div>
-        </div>
-        <div class="fb-continuation" id="fb-continuation">
-          <div class="fb-contr-icon">🚀</div>
-          <div class="fb-contr-text" data-i18n="fb-contr-text">
-            <strong>持续扩张 = 更快回本</strong><br>
-            <span>首批回本后，继续铺设第2、3批设备，边际成本更低（团队已成型、渠道已打通），回本周期将显著缩短。</span>
-          </div>
-        </div>
-        <div class="fb-note" data-i18n="fb-note">
-          ⚠️ 以上数据基于首批设备静态测算，未计入持续扩张带来的规模效应与运营效率提升
         </div>
       </div>
 
@@ -617,6 +588,11 @@
         </div>
       </div>
 
+      <!-- ========== 优化建议区块（新增） ========== -->
+      <div class="optimization-section" id="optimization-tips">
+        <!-- 动态内容，由JS渲染 -->
+      </div>
+
       <div class="analysis-section">
         <div class="analysis-card">
           <div class="analysis-title">
@@ -630,8 +606,8 @@
 
         <div class="analysis-card">
           <div class="analysis-title">
-            <span class="icon">⚠️</span>
-            <span data-i18n="analysis-risk">风险提示</span>
+            <span class="icon">💡</span>
+            <span data-i18n="analysis-risk">优化要点</span>
           </div>
           <div class="analysis-content" id="risk-analysis">
             <ul>
@@ -643,8 +619,8 @@
 
         <div class="analysis-card">
           <div class="analysis-title">
-            <span class="icon">💡</span>
-            <span data-i18n="analysis-suggestion">建议动作</span>
+            <span class="icon">🚀</span>
+            <span data-i18n="analysis-suggestion">玖果支持</span>
           </div>
           <div class="analysis-content" id="suggestion-analysis">
             <ul>
@@ -718,15 +694,17 @@
         <button class="btn-secondary" onclick="goToPage('page-team')">
           <span data-i18n="btn-back-params">← 返回修改参数</span>
         </button>
-      </div>
-
-      <!-- 官网引流 -->
-      <div class="website-section">
-        <div class="website-text" data-i18n="website-text">了解玖果科技完整解决方案</div>
-        <a class="website-link" href="https://www.jiuguotech.com" target="_blank" rel="noopener">
-          <span data-i18n="website-link-text">访问官网 www.jiuguotech.com</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        </a>
+        <div class="website-link">
+          <span class="learn-more-text" data-i18n="learn-more">了解更多</span>
+          <a href="https://www.jiuguotech.com" target="_blank" class="website-link-btn">
+            <svg class="website-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12:2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span class="website-domain">jiuguotech.com</span>
+          </a>
+        </div>
       </div>
 
       <div class="key-vars">

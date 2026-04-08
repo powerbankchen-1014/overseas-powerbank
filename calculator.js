@@ -20,40 +20,41 @@ function goToPage(pageId) {
 
 function validateAndGo(fromPage, toPage) {
   const errors = [];
+  const lang = window.currentLang || 'zh';
 
   if (fromPage === 'page-basic') {
     if (!document.getElementById('country').value) {
-      errors.push('请选择目标国家/市场');
+      errors.push(lang === 'en' ? 'Please select target country/market' : '请选择目标国家/市场');
     }
     if (!getSelectedValue('city-type')) {
-      errors.push('请选择投放范围（单城市/跨城市）');
+      errors.push(lang === 'en' ? 'Please select deployment scope (single city/multi-city)' : '请选择投放范围（单城市/跨城市）');
     }
     if (!getSelectedValue('stage')) {
-      errors.push('请选择当前项目阶段');
+      errors.push(lang === 'en' ? 'Please select current project stage' : '请选择当前项目阶段');
     }
     if (!getSelectedValue('scale')) {
-      errors.push('请选择预计投放规模');
+      errors.push(lang === 'en' ? 'Please select estimated deployment scale' : '请选择预计投放规模');
     }
     if (!getSelectedValue('mode')) {
-      errors.push('请选择铺设方式');
+      errors.push(lang === 'en' ? 'Please select deployment model' : '请选择铺设方式');
     }
   }
 
   if (fromPage === 'page-operation') {
     if (!document.getElementById('monthly-income').value) {
-      errors.push('请填写预估单台月收入（可使用系统自动填入的建议值）');
+      errors.push(lang === 'en' ? 'Please fill in estimated monthly revenue per unit' : '请填写预估单台月收入（可使用系统自动填入的建议值）');
     }
     if (!document.getElementById('hardware-cost').value) {
-      errors.push('请填写单台硬件综合投入成本');
+      errors.push(lang === 'en' ? 'Please fill in hardware cost per unit' : '请填写单台硬件综合投入成本');
     }
     if (!document.getElementById('labor-cost').value) {
-      errors.push('请填写平均人力成本');
+      errors.push(lang === 'en' ? 'Please fill in average labor cost' : '请填写平均人力成本');
     }
   }
 
   if (fromPage === 'page-team') {
     if (!document.getElementById('labor-cost').value) {
-      errors.push('请填写平均人力成本');
+      errors.push(lang === 'en' ? 'Please fill in average labor cost' : '请填写平均人力成本');
     }
   }
 
@@ -136,7 +137,7 @@ function updateSliderValue(type, value) {
 function updateInvestmentDisplay(value) {
   const display = document.getElementById('investment-display');
   if (display) {
-    display.innerHTML = value + '<span>万元</span>';
+    display.innerHTML = value + '<span>' + t('unit-wan-display', '万元') + '</span>';
   }
 }
 
@@ -147,10 +148,13 @@ function onCountryChange() {
   const otherInput = document.getElementById('other-country-input');
   const incomeInput = document.getElementById('monthly-income');
   const incomeHint = document.getElementById('income-hint');
+  const lang = window.currentLang || 'zh';
 
   if (country.value === 'other') {
     otherInput.style.display = 'block';
-    incomeHint.textContent = '请根据对目标市场的了解，手动填写单台月收入估算值（参考：东南亚120-300元）';
+    incomeHint.textContent = lang === 'en'
+      ? 'Manually fill in per-unit monthly revenue based on your market knowledge (SE Asia reference: ¥120-300)'
+      : '请根据对目标市场的了解，手动填写单台月收入估算值（参考：东南亚120-300元）';
     incomeInput.value = '';
   } else if (country.value) {
     otherInput.style.display = 'none';
@@ -162,32 +166,70 @@ function onCountryChange() {
       // 自动填入保守建议值（偏低区间）
       const suggestedIncome = Math.round((parseInt(minIncome) + parseInt(maxIncome)) / 2 * 0.8);
       incomeInput.value = suggestedIncome;
-      incomeHint.innerHTML = `<strong>参考区间：</strong>${minIncome}-${maxIncome} 元/台/月（已填保守估算值）`;
+      if (lang === 'en') {
+        incomeHint.innerHTML = `<strong>Reference Range:</strong> ¥${minIncome}-${maxIncome}/unit/month (conservative estimate filled)`;
+      } else {
+        incomeHint.innerHTML = `<strong>参考区间：</strong>${minIncome}-${maxIncome} 元/台/月（已填保守估算值）`;
+      }
     }
   } else {
     otherInput.style.display = 'none';
-    incomeHint.textContent = '请先选择目标市场，系统将自动给出建议区间';
+    incomeHint.textContent = lang === 'en'
+      ? 'Please select target market first, system will auto-fill recommended range'
+      : '请先选择目标市场，系统将自动给出建议区间';
     incomeInput.value = '';
   }
 }
 
+var checkIncomeTimer = null;
+
 function checkIncomeValue() {
-  const incomeInput = document.getElementById('monthly-income');
-  const alert = document.getElementById('income-alert');
+  if (checkIncomeTimer) clearTimeout(checkIncomeTimer);
 
-  if (incomeInput && alert) {
-    const value = parseFloat(incomeInput.value);
-    const country = document.getElementById('country');
-    const selectedOption = country.options[country.selectedIndex];
-    const maxIncome = selectedOption ? parseInt(selectedOption.getAttribute('data-income-max')) : 300;
+  var incomeInput = document.getElementById('monthly-income');
+  var alert = document.getElementById('income-alert');
+  var lang = window.currentLang || 'zh';
 
-    if (value > maxIncome * 1.1) {
-      alert.classList.add('show');
-      alert.textContent = `您填写的单台月收入（${value}元）高于该市场参考上限（${maxIncome}元），可能导致结果过于乐观`;
-    } else if (value > 0) {
-      alert.classList.remove('show');
+  checkIncomeTimer = setTimeout(function() {
+    if (incomeInput && alert) {
+      var numValue = parseFloat(incomeInput.value);
+      var country = document.getElementById('country');
+      var idx = country.selectedIndex;
+      var minIncome = 120;
+      var maxIncome = 300;
+
+      if (idx >= 0) {
+        var opts = country.options[idx];
+        var m = opts.getAttribute('data-income-min');
+        var mx = opts.getAttribute('data-income-max');
+        if (m) minIncome = parseInt(m);
+        if (mx) maxIncome = parseInt(mx);
+      }
+
+      if (numValue > 0) {
+        var txt;
+        if (lang === 'en') {
+          txt = `You entered ¥${numValue} — we will use this per-unit average for calculation`;
+          if (numValue > maxIncome) {
+            txt += `. Note: This is above market reference ceiling (¥${maxIncome}), results may be overly optimistic`;
+          } else if (numValue < minIncome) {
+            txt += `. Note: Per-unit average is below reference floor (¥${minIncome}), actual results may be better than calculated`;
+          }
+        } else {
+          txt = `您填写的数字是${numValue}，我们将用这个台均进行测算`;
+          if (numValue > maxIncome) {
+            txt += `。但注意：这个数字高于市场参考上限（${maxIncome}元），可能导致结果过于乐观`;
+          } else if (numValue < minIncome) {
+            txt += `。但注意：台均低于参考下限（${minIncome}元），实际经营数据可能优于测算`;
+          }
+        }
+        alert.textContent = txt;
+        alert.classList.add('show');
+      } else {
+        alert.classList.remove('show');
+      }
     }
-  }
+  }, 150);
 }
 
 // ========== BD/渠道滑块 → 动态警告 ==========
@@ -195,8 +237,10 @@ function checkIncomeValue() {
 function updateChannelSlider(value) {
   const valueElement = document.getElementById('channel-value');
   const bdPercent = 100 - parseInt(value);
+  const lang = window.currentLang || 'zh';
   if (valueElement) {
-    valueElement.innerHTML = `${value}<span>% 渠道 | ${bdPercent}% BD</span>`;
+    const channelText = lang === 'en' ? '% Channel | ' : '% 渠道 | ';
+    valueElement.innerHTML = `${value}<span>${channelText}${bdPercent}% BD</span>`;
   }
 
   // BD比例警告
@@ -219,8 +263,9 @@ function updateChannelSlider(value) {
 function getUserInputs() {
   // 基础信息
   const country = document.getElementById('country').value;
+  const lang = window.currentLang || 'zh';
   const countryText = country === 'other'
-    ? document.getElementById('other-country').value || '其他市场'
+    ? document.getElementById('other-country').value || (lang === 'en' ? 'Other Markets' : '其他市场')
     : document.getElementById('country').options[document.getElementById('country').selectedIndex].text;
   const cityType = getSelectedValue('city-type');
   const scale = getSelectedValue('scale');
@@ -244,7 +289,7 @@ function getUserInputs() {
   const bdRatio = 1 - channelRatio;
 
   // 人效参数
-  const bdCapacity = parseFloat(document.getElementById('bd-capacity').value) || 15;
+  const bdCapacity = parseFloat(document.getElementById('bd-capacity').value) || 45;
   const maintenanceCapacity = parseFloat(document.getElementById('maintenance-capacity').value) || 600;
   const adminCapacity = parseFloat(document.getElementById('admin-capacity').value) || 800;
   const laborCost = parseFloat(document.getElementById('labor-cost').value) || 8050;
@@ -356,62 +401,19 @@ function calculateResults(params) {
   // ===== 7. 月总成本 =====
   const totalMonthlyCost = monthlyLaborCost + monthlyOverhead;
 
-  // ===== 8. 月利润 =====  （全量运营时的月利润）
+  // ===== 8. 月利润 =====
   const monthlyProfit = monthlyNetIncome - totalMonthlyCost;
 
-  // ===== 9. 盈亏平衡点（月）——按当月现金流计算 =====
-  // 算法说明：
-  // - Month 1：准备期，无设备落地，当月支出 = 固定成本+开办费，当月收入=0
-  // - Month 2 开始：每月落地 300 台
-  // - 盈亏平衡点 = 第一个"当月收入 > 当月支出"的月份
-  const PER_MONTH_DEPLOY = 300; // 每月铺设备数
-  const startUpCost = 50000; // 开办费
-  const perUnitMonthlyContribution = monthlyNetIncome / scale; // 每台每月净贡献
+  // ===== 9. 回本周期 =====
+  // 初始投入 = 设备成本 + 开办费
+  const initialInvestment = totalHardwareInvestment + 50000;
 
-  let breakevenMonth = null;
-  let month = 1;
-  let deployed = 0;
-
-  // Month 1：准备期（无设备，无收入）
-  const month1Expense = totalMonthlyCost + startUpCost;
-  if (month1Expense <= 0) breakevenMonth = 1; // 理论上不可能
-  if (breakevenMonth === null) month++;
-
-  // 部署期：每月落地设备，当月收入=已部署台数×单台净贡献
-  while (deployed < scale && breakevenMonth === null && month <= 60) {
-    deployed = Math.min(deployed + PER_MONTH_DEPLOY, scale);
-    const thisMonthRevenue = deployed * perUnitMonthlyContribution;
-    const thisMonthExpense = totalMonthlyCost; // 当月固定成本
-    if (thisMonthRevenue > thisMonthExpense) {
-      breakevenMonth = month; // 当月现金流首次转正
-    }
-    month++;
-  }
-
-  // 全部铺完后仍不够 → 检查全量状态下是否盈利
-  if (breakevenMonth === null && deployed >= scale) {
-    if (monthlyNetIncome > totalMonthlyCost) {
-      breakevenMonth = month; // 全量落地后再跑一个月，全量收入覆盖固定成本
-    }
-  }
-
-  // 如果全量落地后月利润仍<=0，说明规模不够
-  if (breakevenMonth === null) breakevenMonth = 999;
-
-  // ===== 10. 回本周期 —— 基于真实月现金流 =====
-  const initialInvestment = totalHardwareInvestment + startUpCost;
   let paybackMonths;
   if (monthlyProfit <= 0) {
     paybackMonths = 999;
   } else {
-    // 重新计算：从第一个月现金流开始累加
-    // Month 1: -labor -overhead -startup -device_deployed_month1(0)
-    // Month 2+: revenue - fixed_cost
-    // 回本 = 初始投入 / 月利润，但起始点要等全部设备铺完后的次月开始算
-    // 为简化：仍然用全量月利润 / 总投入，但以全部落地后那个月为起点
     paybackMonths = Math.ceil(initialInvestment / monthlyProfit);
     paybackMonths = Math.min(paybackMonths, 60);
-    paybackMonths += (breakevenMonth < 999 ? breakevenMonth : 1);
   }
 
   // ===== 10. 风险评估 =====
@@ -448,27 +450,47 @@ function calculateResults(params) {
     rating = 'risky';
   }
 
-  // ===== 12. 利润潜力等级 =====
+  // ===== 12. 利润潜力等级（使用英文key，由displayResults翻译） =====
   let profitLevel;
   if (monthlyProfit > 200000) {
-    profitLevel = '较高';
+    profitLevel = 'high';
   } else if (monthlyProfit > 80000) {
-    profitLevel = '中等';
+    profitLevel = 'medium';
   } else if (monthlyProfit > 0) {
-    profitLevel = '较低';
+    profitLevel = 'low';
   } else {
-    profitLevel = '亏损';
+    profitLevel = 'loss';
   }
 
-  // ===== 13. 最低准备资金 = 硬件投入 + 开办费 + 6个月运营备用金 =====
-  const operatingReserve = totalMonthlyCost * 6;
-  const minRequiredCapital = totalHardwareInvestment + startUpCost + operatingReserve;
+  // ===== 9.5 首批设备落地盈亏分析（静态测算） =====
+  // 盈亏平衡点：当月现金流 = 0
+  // 月净收入 - 月固定成本 = 0
+  // scale × netPerUnit - totalTeamSize × laborCost - overhead = 0
+  // scale = (totalTeamSize × laborCost + overhead) / netPerUnit
+  const netPerUnit = monthlyIncome * (1 - splitRatio - systemCostRatio);
+  const breakevenScale = netPerUnit > 0 ? Math.ceil((totalTeamSize * laborCost + monthlyOverhead) / netPerUnit) : 999;
+
+  // 首批回本周期（停止发展时）
+  // 首批规模 × (设备成本 + 安装成本) + 开办费
+  const firstBatchCost = scale * (hardwareCost + installCost) + 50000;
+  // 首批月净收入
+  const firstBatchNetIncome = scale * netPerUnit;
+  // 首批月利润 = 月净收入 - 固定团队成本 - 运营成本
+  const firstBatchMonthlyProfit = firstBatchNetIncome - totalTeamSize * laborCost - monthlyOverhead;
+  let firstBatchPayback;
+  if (firstBatchMonthlyProfit <= 0) {
+    firstBatchPayback = 999;
+  } else {
+    firstBatchPayback = Math.ceil(firstBatchCost / firstBatchMonthlyProfit);
+    firstBatchPayback = Math.min(firstBatchPayback, 60);
+  }
+
+  // 最低准备资金 = 硬件投入 + 开办费 + 6个月运营备用金
+  const minRequiredFund = totalHardwareInvestment + 50000 + Math.max(0, totalTeamSize * laborCost + monthlyOverhead) * 6;
 
   return {
     investment: Math.round(investment),
     paybackMonths,
-    breakevenMonth,
-    minRequiredCapital: Math.round(minRequiredCapital),
     monthlyProfit: Math.round(monthlyProfit),
     monthlyNetIncome: Math.round(monthlyNetIncome),
     monthlyGrossIncome: Math.round(monthlyGrossIncome),
@@ -487,7 +509,11 @@ function calculateResults(params) {
     totalTeamSize,
     bdCount,
     maintenanceCount,
-    adminCount
+    adminCount,
+    // V4新增字段
+    breakevenScale,
+    firstBatchPayback,
+    minRequiredFund
   };
 }
 
@@ -572,121 +598,335 @@ function calculateMinimumViableScale(params) {
 }
 
 function generateAnalysis(params, results) {
-  const { monthlyIncome, splitRatio, channelRatio, bdRatio, scale, mode, countryText, totalInvestment } = params;
-  const { monthlyProfit, paybackMonths, fundPressure, complexity, monthlyNetIncome, monthlyLaborCost, monthlyOverhead, breakevenMonth } = results;
+  const { monthlyIncome, splitRatio, channelRatio, bdRatio, scale, mode, countryText, totalInvestment, systemCostRatio, laborCost } = params;
+  const { monthlyProfit, paybackMonths, fundPressure, complexity, monthlyNetIncome, monthlyLaborCost, monthlyOverhead } = results;
 
-  // 盈利核心判断
+  // 盈利核心判断 - 改为积极引导（支持中英文）
   let profitAnalysis = '';
+  const lang = window.currentLang || 'zh';
+
+  // 格式化金额函数 - 英文使用千分位，中文使用万
+  const formatAmount = (num) => {
+    if (lang === 'en') {
+      // 英文模式：¥ + 千分位格式
+      return '¥' + num.toLocaleString();
+    }
+    if (num >= 10000) {
+      return (num / 10000).toFixed(1) + '万';
+    }
+    return num.toLocaleString();
+  };
+
   if (monthlyProfit > 0) {
     const profitRate = ((monthlyProfit / monthlyNetIncome) * 100).toFixed(1);
-    // 添加团队结构说明
     const bdNote = bdRatio <= 0.2
-      ? '（以渠道铺设为主，BD人数精简至1-2人）'
+      ? (lang === 'en' ? ' (Channel-focused, BD team can be 1-2 people)' : '（以渠道铺设为主，BD人数精简至1-2人）')
       : '';
-    profitAnalysis = `当前模型下，月度净收入约${formatMoney(monthlyNetIncome)}元，扣除人力和运营成本后，预计月利润约${formatMoney(monthlyProfit)}元（净利率约${profitRate}%）${bdNote}。`;
+
+    if (lang === 'en') {
+      profitAnalysis = `Under current parameters, monthly net revenue is approximately ${formatAmount(monthlyNetIncome)}, with estimated monthly profit of ${formatAmount(monthlyProfit)} after costs (net margin ~${profitRate}%)${bdNote}. The project has profit potential — further optimization can improve returns.`;
+    } else {
+      profitAnalysis = `当前参数下，月度净收入约${formatAmount(monthlyNetIncome)}元，扣除成本后预计月利润约${formatAmount(monthlyProfit)}元（净利率约${profitRate}%）${bdNote}。项目具备盈利基础，继续优化可进一步提升收益。`;
+    }
   } else {
-    const loss = Math.abs(monthlyProfit);
-    const mainCost = monthlyLaborCost > monthlyOverhead ? '人力成本（月均' + formatMoney(monthlyLaborCost) + '元）' : '运营成本';
-    profitAnalysis = `当前模型下，月度运营成本高于净收入约${formatMoney(loss)}元。建议优化分成比例、降低${mainCost}或提高单台收入。`;
+    const mainCost = monthlyLaborCost > monthlyOverhead
+      ? (lang === 'en' ? 'labor costs' : '人力成本')
+      : (lang === 'en' ? 'operating costs' : '运营成本');
+
+    if (lang === 'en') {
+      profitAnalysis = `Under current parameters, monthly cash flow needs optimization, mainly because ${mainCost} account for a relatively high proportion. This is common in overseas markets — Juugo has multiple proven solutions to help you optimize to profitability.`;
+    } else {
+      profitAnalysis = `当前参数下，月度现金流需要优化，主要因为${mainCost}占比较高。这个问题在海外市场很常见，玖果有多套成熟方案可以帮您优化到盈利区间。`;
+    }
   }
 
-  // 风险提示
+  // 优化提示（改为建设性语言）
   const risks = [];
+  const unitYuan = lang === 'en' ? '' : '元';
 
   if (monthlyIncome > 200) {
-    risks.push(`您填写的单台月收入（${monthlyIncome}元）较高，建议结合当地真实数据进一步校准`);
+    risks.push(lang === 'en'
+      ? `💡 Per-unit revenue (¥${monthlyIncome}${unitYuan}) is set high — can be validated in actual operations`
+      : `💡 单台月收入（${monthlyIncome}${unitYuan}）设定较高，实际运营中可逐步验证提升`);
   }
 
   if (splitRatio > 0.25) {
-    risks.push(`当前商户分成比例${(splitRatio * 100).toFixed(0)}%较高，需关注实际场地谈判能力`);
+    risks.push(lang === 'en'
+      ? `💡 Merchant split ${(splitRatio * 100).toFixed(0)}% has optimization potential — Juugo can provide quality channel negotiation support`
+      : `💡 商户分成${(splitRatio * 100).toFixed(0)}%有一定优化空间，玖果可提供优质渠道谈判支持`);
   }
 
   if (bdRatio > 0.4) {
-    risks.push(`⚠️ BD铺设占比${(bdRatio * 100).toFixed(0)}%偏高，海外BD效率低、人员管理难，建议优先走大渠道/连锁`);
+    risks.push(lang === 'en'
+      ? `💡 Recommend increasing channel deployment ratio — Juugo can assist connecting with large chain resources`
+      : `💡 建议增加渠道铺设比例，玖果可协助对接大型连锁渠道资源`);
   }
 
   if (bdRatio > 0.6) {
-    risks.push(`⚠️ BD铺设占比${(bdRatio * 100).toFixed(0)}%风险极大，建议控制在20%以内`);
+    risks.push(lang === 'en'
+      ? `💡 Recommend prioritizing large chain/channel partnerships — Juugo has proven channel experience`
+      : `💡 建议优先开发大渠道/连锁合作，玖果有成熟的渠道对接经验`);
   }
 
   if (scale > 800) {
-    risks.push('您的投放规模较大，需确认当地团队的招聘和管理能力');
+    risks.push(lang === 'en'
+      ? `💡 Large-scale deployment recommended in phases — Juugo can provide detailed expansion plans`
+      : `💡 大规模投放建议分阶段推进，玖果可提供详细的扩张节奏方案`);
   }
 
   if (monthlyProfit <= 0) {
-    risks.push('⚠️ 当前模型月度亏损，建议优先降低分成比例或增加渠道铺设比例');
+    risks.push(lang === 'en'
+      ? `🎯 Current parameters have optimization space — project viability will significantly improve after adjustments`
+      : `🎯 当前参数有优化空间，调整后项目可行性会显著提升`);
   }
 
   if (fundPressure === 'high') {
-    risks.push('⚠️ 前期资金压力较大，建议分阶段投放，避免一次性铺太多设备');
+    risks.push(lang === 'en'
+      ? `💡 Recommend phased deployment to reduce initial capital pressure`
+      : `💡 建议分阶段投放，降低初期资金压力`);
   }
 
   if (totalInvestment > 3000000) {
-    risks.push('投入规模较大，建议分批采购设备，降低库存和资金压力');
+    risks.push(lang === 'en'
+      ? `💡 Recommend batch equipment procurement — Juugo can provide flexible cooperation plans`
+      : `💡 建议分批采购设备，玖果可提供灵活的合作方案`);
   }
 
   if (risks.length === 0) {
-    risks.push('当前参数设置相对合理，建议尽快推进项目验证');
+    risks.push(lang === 'en'
+      ? '✨ Current parameters are set well — project has good profit foundation'
+      : '✨ 当前参数设置良好，项目具备良好的盈利基础');
   }
 
-  // 建议动作 —— 全新框架（使用i18n翻译系统）
+  // 玖果支持 - 改为积极引导
   const suggestions = [];
-  const lang = window.currentLang || 'zh';
 
-  function s(key, params) {
-    const t = translations[key];
-    if (!t) return key;
-    let text = t[lang] || t.zh || key;
-    if (params) {
-      Object.keys(params).forEach(function(p) {
-        text = text.replace(p, params[p]);
-      });
-    }
-    return text;
+  if (bdRatio > 0.3) {
+    suggestions.push(lang === 'en'
+      ? '🔥 Prioritize large chain supermarkets, shopping centers, airports — Juugo has existing channel resources to connect'
+      : '🔥 优先对接大型连锁商超、购物中心、机场等优质渠道，玖果有现成渠道资源可对接');
   }
 
-  // ===== 1. 首批规模盈亏点引导（最重要） =====
-  if (breakevenMonth >= 999) {
-    suggestions.push(s('suggest-breakeven-fail'));
-  } else if (breakevenMonth > 6) {
-    suggestions.push(s('suggest-breakeven-slow', { 'N': breakevenMonth }));
-  } else {
-    suggestions.push(s('suggest-breakeven-good'));
+  if (channelRatio < 0.5) {
+    suggestions.push(lang === 'en'
+      ? '🔥 Increase channel deployment to 50%+ to significantly reduce team management difficulty — Juugo assists throughout'
+      : '🔥 将渠道铺设提升至50%以上，可大幅降低团队管理难度，玖果全程协助');
   }
 
-  // ===== 2. 玖果科技专业服务引导 =====
-  // 所有客户都会看到这些核心服务价值
-  suggestions.push(s('suggest-jiuguo-softpower'));
-
-  // ===== 3. 按具体情况补充建议 =====
-  if (bdRatio > 0.35) {
-    suggestions.push(s('suggest-bd-ratio'));
+  if (scale > 500) {
+    suggestions.push(lang === 'en'
+      ? '💡 Recommend phased expansion — Juugo provides detailed 3-phase deployment plan to reduce trial costs'
+      : '💡 建议分阶段扩张，玖果提供详细的3阶段投放方案，降低试错成本');
   }
 
-  if (splitRatio > 0.22) {
-    suggestions.push(s('suggest-split-ratio'));
+  if (splitRatio > 0.2) {
+    suggestions.push(lang === 'en'
+      ? '💡 Merchant split has optimization space — Juugo can provide negotiation tactics and case references'
+      : '💡 商户分成优化空间大，玖果可提供谈判话术和成功案例参考');
   }
 
   if (fundPressure === 'high') {
-    suggestions.push(s('suggest-staged-purchase'));
+    suggestions.push(lang === 'en'
+      ? '💡 Juugo provides operational support to help you start with lower risk'
+      : '💡 玖果提供运营支持，帮助您以更低风险起步');
   }
 
-  if (suggestions.length === 0) {
-    suggestions.push(s('suggest-all-good'));
+  if (scale < 200) {
+    suggestions.push(lang === 'en'
+      ? '💡 Recommend starting scale of at least 300 units — Juugo can assist planning optimal start plan'
+      : '💡 建议起步规模至少300台，玖果可协助规划最优起步方案');
   }
+
+  if (monthlyProfit <= 0) {
+    suggestions.push(lang === 'en'
+      ? '🎯 Project viability will significantly improve after parameter adjustments — Juugo consultant can help you find optimal plan'
+      : '🎯 调整参数后项目可行性会大幅提升，玖果顾问可帮您测算最优方案');
+  }
+
+  // 玖果支持 - 始终显示
+  suggestions.push(lang === 'en'
+    ? '🚀 Juugo provides full operational training and market launch support — quick ramp-up even in new markets'
+    : '🚀 玖果提供全套运营培训和市场启动支持，新市场也能快速起量');
+  suggestions.push(lang === 'en'
+    ? '🎯 Juugo provides user fission system, lucky draw marketing, store acquisition & review management tools — lower CAC, faster user adoption, rapid market expansion'
+    : '🎯 玖果提供用户裂变系统、大转盘抽奖营销、门店获客、评价管理工具，降低获客成本，加速用户培养，快速市场扩张');
+  suggestions.push(lang === 'en'
+    ? '💬 Scan QR to get "SE Asia Power Bank Localization Guide" with detailed market analysis of 12 countries'
+    : '💬 扫码领取《东南亚共享充电宝落地指南》，含12个国家详细市场分析');
+
+  if (suggestions.length === 0) {
+    suggestions.push(lang === 'en'
+      ? '✨ Current parameters are excellent — project has good profit foundation, welcome to scan for in-depth exchange'
+      : '✨ 当前参数优秀，项目具备良好盈利基础，欢迎扫码深入交流');
+  }
+
+  // 生成优化建议（告诉用户具体怎么调）
+  const optimizationTips = generateOptimizationTips(params, results);
 
   return {
     profitAnalysis,
     risks,
-    suggestions
+    suggestions,
+    optimizationTips
   };
 }
 
-function formatMoney(num) {
+// ========== 生成具体优化建议 ==========
+function generateOptimizationTips(params, results) {
+  const tips = [];
+  const { monthlyIncome, splitRatio, channelRatio, bdRatio, scale, laborCost, systemCostRatio } = params;
+  const { monthlyProfit, monthlyNetIncome, monthlyLaborCost } = results;
+
+  // 获取当前语言
+  const tipLang = window.currentLang || 'zh';
+
+  // 格式化金额函数 - 英文使用千分位，中文使用万
+  const formatTipAmount = (num) => {
+    if (tipLang === 'en') {
+      // 英文模式：¥ + 千分位格式
+      return '¥' + num.toLocaleString();
+    }
+    if (num >= 10000) {
+      return (num / 10000).toFixed(1) + '万';
+    }
+    return num.toLocaleString();
+  };
+
+  // 1. 如果分成比例高
+  if (splitRatio > 0.2) {
+    const diff = splitRatio - 0.2;
+    const lossPerUnit = monthlyIncome * diff;
+    const monthlyLoss = scale * lossPerUnit;
+    const desc = tipLang === 'en'
+      ? `Reducing split from ${(splitRatio * 100).toFixed(0)}% to 20% can increase monthly net income by ~${formatTipAmount(monthlyLoss)}`
+      : `将分成从${(splitRatio * 100).toFixed(0)}%降至20%，预计每月可增加约${formatTipAmount(monthlyLoss)}元净收入`;
+    tips.push({
+      icon: '🏪',
+      titleKey: 'opt-title-split',
+      descKey: 'opt-desc-split',
+      actionKey: 'opt-action-split',
+      title: tipLang === 'en' ? 'Optimize Merchant Split' : '优化商户分成',
+      desc: desc,
+      action: tipLang === 'en' ? 'Juugo can help connect you with quality channels with better splits' : '玖果可协助对接分成友好的优质渠道'
+    });
+  }
+
+  // 2. 如果BD比例高
+  if (bdRatio > 0.3) {
+    const desc = tipLang === 'en'
+      ? `Increasing channel deployment from ${(channelRatio * 100).toFixed(0)}% to 70%+ can significantly reduce labor costs`
+      : `将渠道铺设从${(channelRatio * 100).toFixed(0)}%提升至70%以上，可显著降低人力成本`;
+    tips.push({
+      icon: '🤝',
+      titleKey: 'opt-title-channel',
+      descKey: 'opt-desc-channel',
+      actionKey: 'opt-action-channel',
+      title: tipLang === 'en' ? 'Increase Channel Deployment' : '增加渠道铺设',
+      desc: desc,
+      action: tipLang === 'en' ? 'Juugo has SE Asia chain channel resources for quick deployment' : '玖果有东南亚大型连锁渠道资源，可快速对接'
+    });
+  }
+
+  // 3. 如果单台收入偏低
+  if (monthlyIncome < 200) {
+    const desc = tipLang === 'en'
+      ? `Current per-unit revenue of ¥${monthlyIncome} can be improved to ¥200-300 by targeting high-traffic locations (malls, bars, airports)`
+      : `当前台均${monthlyIncome}元，可通过入驻高客流场所（商场、酒吧、机场）提升至200-300元`;
+    tips.push({
+      icon: '📈',
+      titleKey: 'opt-title-income',
+      descKey: 'opt-desc-income',
+      actionKey: 'opt-action-income',
+      title: tipLang === 'en' ? 'Increase Per-Unit Revenue' : '提升台均收入',
+      desc: desc,
+      action: tipLang === 'en' ? 'Juugo provides location selection guide and channel connection service' : '玖果提供点位筛选指南和渠道对接服务'
+    });
+  }
+
+  // 4. 如果规模偏小
+  if (scale < 300) {
+    const desc = tipLang === 'en'
+      ? `Starting with ${scale} units is small. Recommend 300-500 units for scale effect`
+      : `首批${scale}台规模较小，建议增至300-500台以形成规模效应`;
+    tips.push({
+      icon: '📦',
+      titleKey: 'opt-title-scale',
+      descKey: 'opt-desc-scale',
+      actionKey: 'opt-action-scale',
+      title: tipLang === 'en' ? 'Increase Starting Scale' : '适当增加起步规模',
+      desc: desc,
+      action: tipLang === 'en' ? 'Juugo provides professional operational support to help you get started' : '玖果提供专业运营支持，帮助您顺利起步'
+    });
+  }
+
+  // 5. 如果人力成本高
+  if (monthlyLaborCost > monthlyNetIncome * 0.5) {
+    tips.push({
+      icon: '👥',
+      titleKey: 'opt-title-team',
+      descKey: 'opt-desc-team',
+      actionKey: 'opt-action-team',
+      title: tipLang === 'en' ? 'Optimize Team Setup' : '优化团队配置',
+      desc: tipLang === 'en' ? 'Current labor cost is relatively high — channel deployment can reduce BD needs' : '当前人力成本占比较高，可通过渠道铺设减少BD人员需求',
+      action: tipLang === 'en' ? 'Juugo provides team building standards and training support' : '玖果提供团队搭建标准和培训支持'
+    });
+  }
+
+  // 6. 如果亏损但有潜力
+  if (monthlyProfit <= 0 && tips.length > 0) {
+    const monthsMin = Math.max(6, Math.round(results.paybackMonths * 0.7));
+    const monthsMax = Math.round(results.paybackMonths);
+    const desc = tipLang === 'en'
+      ? `After implementing combined optimizations, project can be profitable within ${monthsMin}-${monthsMax} months`
+      : `上述优化方案组合实施后，项目有望在${monthsMin}-${monthsMax}个月内实现盈利`;
+    tips.push({
+      icon: '💡',
+      titleKey: 'opt-title-forecast',
+      descKey: 'opt-desc-forecast',
+      actionKey: 'opt-action-forecast',
+      title: tipLang === 'en' ? 'Combined Optimization Forecast' : '综合优化效果预估',
+      desc: desc,
+      action: tipLang === 'en' ? 'Scan QR for detailed optimization plan and financial projection' : '扫码获取详细优化方案和财务测算'
+    });
+  }
+
+  // 7. 如果所有参数都挺好
+  if (tips.length === 0) {
+    tips.push({
+      icon: '🎉',
+      titleKey: 'opt-title-good',
+      descKey: 'opt-desc-good',
+      actionKey: 'opt-action-good',
+      title: tipLang === 'en' ? 'Good Project Conditions' : '项目条件良好',
+      desc: tipLang === 'en' ? 'Current parameters are reasonable with good profit potential' : '当前参数设置合理，具备良好的盈利基础',
+      action: tipLang === 'en' ? 'Recommend locking in quality channels and starting operations soon' : '建议尽快锁定优质渠道开始运营'
+    });
+  }
+
+  return tips;
+}
+
+function formatMoney(num, lang) {
+  lang = lang || window.currentLang || 'zh';
   if (num >= 10000) {
+    if (lang === 'en') {
+      return (num / 10000).toFixed(1) + '万';
+    }
     return (num / 10000).toFixed(1) + '万';
   }
   return num.toLocaleString();
+}
+
+function formatMoneyLocalized(num) {
+  const lang = window.currentLang || 'zh';
+  if (num >= 10000) {
+    const wan = (num / 10000).toFixed(1);
+    if (lang === 'en') {
+      return '$' + (num / 10000).toFixed(1) + '万';
+    }
+    return wan + '万';
+  }
+  return lang === 'en' ? '$' + num.toLocaleString() : num.toLocaleString();
 }
 
 function calculateAndShowResult() {
@@ -700,51 +940,56 @@ function calculateAndShowResult() {
 }
 
 function updateResultUI(params, results, analysis, viability) {
+  const lang = window.currentLang || 'zh';
 
-  // ========== 首批设备盈亏分析 ==========
-  const fbCard = document.getElementById('first-batch-card');
-  if (fbCard) {
-    fbCard.style.display = 'block';
+  // ========== V4: 首批设备落地盈亏分析 ==========
+  const breakevenPoint = document.getElementById('breakeven-point');
+  const firstBatchPaybackEl = document.getElementById('first-batch-payback');
+  const firstBatchPaybackUnit = document.getElementById('first-batch-payback-unit');
+  const firstBatchScaleEl = document.getElementById('first-batch-scale');
+  const minFundDisplay = document.getElementById('min-fund-display');
 
-    // 盈亏平衡点（月）—— 使用按月铺设模型的真实计算结果
-    const breakevenEl = document.getElementById('fb-breakeven');
-    const breakevenVal = results.breakevenMonth;
-    if (breakevenVal >= 999) {
-      breakevenEl.textContent = '无法回本';
-      breakevenEl.className = 'fb-metric-value danger';
-    } else {
-      breakevenEl.textContent = breakevenVal;
-      breakevenEl.className = breakevenVal <= 12 ? 'fb-metric-value primary' : 'fb-metric-value';
-    }
-
-    // 回本周期（首批）—— 直接使用计算结果
-    const paybackEl = document.getElementById('fb-payback');
-    if (results.paybackMonths >= 999) {
-      paybackEl.textContent = '无法回本';
-      paybackEl.className = 'fb-metric-value danger';
-    } else if (results.paybackMonths > 48) {
-      paybackEl.textContent = '48+';
-    } else {
-      paybackEl.textContent = results.paybackMonths;
-    }
-
-    // 首批规模
-    document.getElementById('fb-scale').textContent = params.scale;
+  if (results.breakevenScale >= 999) {
+    breakevenPoint.textContent = t('breakeven-more', '需更多台数');
+    document.querySelectorAll('.fba-item:first-child .fba-unit').forEach(el => {
+      el.textContent = lang === 'en' ? 'units' : '台';
+    });
+  } else {
+    // 盈亏平衡点：只显示数字 + 单位
+    breakevenPoint.textContent = results.breakevenScale;
+    document.querySelectorAll('.fba-item:first-child .fba-unit').forEach(el => {
+      el.textContent = lang === 'en' ? 'units' : '台';
+    });
   }
 
-  // ========== 最低准备资金 ==========
-  const mcCard = document.getElementById('min-capital-card');
-  if (mcCard) {
-    mcCard.style.display = 'block';
-    const capital = results.minRequiredCapital;
-    document.getElementById('min-capital-value').textContent = formatMoney(capital);
+  if (results.firstBatchPayback >= 999) {
+    firstBatchPaybackEl.textContent = t('payback-optimize', '需优化');
+    firstBatchPaybackUnit.textContent = t('payback-params', '参数');
+  } else if (results.firstBatchPayback > 24) {
+    // 24个月以上：显示"大于24个月（静态发展）"，不显示具体数字，不打击客户
+    firstBatchPaybackEl.textContent = t('breakeven-over-24', '大于24个月');
+    firstBatchPaybackUnit.textContent = t('breakeven-static-dev', '（静态发展）');
+  } else {
+    firstBatchPaybackEl.textContent = results.firstBatchPayback;
+    firstBatchPaybackUnit.textContent = t('unit-months', '个月');
+  }
 
-    // 资金构成明细
-    const hw = results.totalHardwareInvestment;
-    const startUp = 50000;
-    const reserve = capital - hw - startUp;
-    document.getElementById('mc-breakdown').textContent =
-      '硬件 ' + formatMoney(hw) + ' + 开办 ' + formatMoney(startUp) + ' + 6月运营备用 ' + formatMoney(reserve);
+  firstBatchScaleEl.textContent = params.scale;
+  // 首批规模的单位：英文显示 units，中文显示台
+  document.querySelectorAll('.fba-item:nth-child(3) .fba-unit').forEach(el => {
+    el.textContent = lang === 'en' ? 'units' : '台';
+  });
+
+  // ========== V4: 最低准备资金 ==========
+  if (minFundDisplay) {
+    if (lang === 'en') {
+      // 英文模式：¥ + 千分位
+      minFundDisplay.textContent = '¥' + Math.round(results.minRequiredFund).toLocaleString();
+    } else {
+      // 中文模式：万
+      const minFundWan = Math.round(results.minRequiredFund / 10000);
+      minFundDisplay.textContent = minFundWan + '万元';
+    }
   }
 
   // ========== 最低盈利台数模块（仅在不健康时显示） ==========
@@ -765,33 +1010,46 @@ function updateResultUI(params, results, analysis, viability) {
       const minScaleWarning = document.getElementById('min-scale-warning');
 
       // 当前台数
-      minScaleCurrent.textContent = params.scale + '台';
+      const unitScale = lang === 'en' ? ' units' : '台';
+      minScaleCurrent.textContent = params.scale + unitScale;
 
       // 最低盈利台数
       if (viability.status === 'impossible') {
-        minScaleStatus.innerHTML = '<span class="ms-status-icon danger">⚠️</span><span class="ms-status-text danger">当前台均无法盈利</span>';
-        minScaleRequired.textContent = '无法计算';
+        minScaleStatus.innerHTML = '<span class="ms-status-icon warning">💡</span><span class="ms-status-text warning">' + t('ms-status-optimize', '需要优化参数') + '</span>';
+        minScaleRequired.textContent = t('ms-need-adjust', '需调整');
         minScaleBar.style.width = '0%';
         minScaleWarning.style.display = 'block';
-        minScaleWarning.innerHTML = `<strong>当前参数下无法盈利：</strong>单台月收入（${params.monthlyIncome}元）扣除分成和系统成本后，可能不足以支撑任何规模的运营。建议提高台均收入或降低分成比例。`;
+        if (lang === 'en') {
+          minScaleWarning.innerHTML = `<strong>💡 Optimization Suggestion:</strong> Current per-unit revenue (¥${params.monthlyIncome}) can be optimized.<br><br><strong>Juugo Support:</strong> We help connect you with high-traffic locations to significantly improve per-unit revenue — scan QR for detailed optimization plan.`;
+        } else {
+          minScaleWarning.innerHTML = `<strong>💡 优化建议：</strong>当前单台月收入（${params.monthlyIncome}元）可以优化。<br><br><strong>玖果支持：</strong>我们帮您对接当地高客流点位，可显著提升台均收入，扫码获取详细优化方案。`;
+        }
       } else {
-        minScaleRequired.textContent = viability.minimumScale + '台';
+        minScaleRequired.textContent = viability.minimumScale + unitScale;
 
         // 计算进度条比例（当前台数 / 最低台数，上限100%）
         const progressPercent = Math.min(100, Math.round((params.scale / viability.minimumScale) * 100));
         minScaleBar.style.width = progressPercent + '%';
 
-        // 根据状态显示不同颜色和提示
+        // 根据状态显示不同颜色和提示 - 改为积极引导
         if (viability.status === 'too-low' || viability.status === 'risky') {
-          minScaleStatus.innerHTML = '<span class="ms-status-icon danger">⚠️</span><span class="ms-status-text danger">规模低于盈利门槛</span>';
-          minScaleBar.style.background = '#ef4444';
-          minScaleWarning.style.display = 'block';
-          minScaleWarning.innerHTML = `<strong>⚠️ 重要提示：</strong>当前投放规模（${params.scale}台）低于最低盈利门槛（${viability.minimumScale}台）。按照当前参数，月净收入可能无法覆盖基础团队成本（${formatMoney(viability.basicMonthlyCost)}元/月 + 运营成本${formatMoney(viability.basicOverhead)}元/月），存在亏损风险。<br><br><strong>💡 建议：</strong>将规模提升至${viability.minimumScale}台以上，或寻找台均更高的优质渠道。`;
-        } else if (viability.status === 'marginal') {
-          minScaleStatus.innerHTML = '<span class="ms-status-icon warning">⚡</span><span class="ms-status-text warning">规模刚好达标</span>';
+          minScaleStatus.innerHTML = '<span class="ms-status-icon warning">🎯</span><span class="ms-status-text warning">' + t('ms-status-scale-tip', '起步规模建议') + '</span>';
           minScaleBar.style.background = '#f59e0b';
           minScaleWarning.style.display = 'block';
-          minScaleWarning.innerHTML = `<strong>⚡ 规模刚好达标：</strong>当前规模（${params.scale}台）勉强达到最低盈利门槛，但利润空间有限，抵抗风险能力较弱。<br><br><strong>💡 建议：</strong>优先选择分成比例较低、客流稳定的优质渠道，逐步提升到${viability.healthyScale}台以上的健康运营规模。`;
+          if (lang === 'en') {
+            minScaleWarning.innerHTML = `<strong>💡 Optimization Suggestion:</strong> Current scale (${params.scale} units) needs more support at startup.<br><br><strong>Juugo Solution:</strong> We can assist connecting with quality local channels and provide operational training — helping you start with lower risk.`;
+          } else {
+            minScaleWarning.innerHTML = `<strong>💡 建议优化：</strong>当前规模（${params.scale}台）起步阶段需要更多支持。<br><br><strong>玖果方案：</strong>我们可以协助对接当地优质渠道，提供运营培训支持，帮助您以更低风险起步。`;
+          }
+        } else if (viability.status === 'marginal') {
+          minScaleStatus.innerHTML = '<span class="ms-status-icon good">👍</span><span class="ms-status-text good">' + t('ms-status-good-scale', '规模基本达标') + '</span>';
+          minScaleBar.style.background = '#10b981';
+          minScaleWarning.style.display = 'block';
+          if (lang === 'en') {
+            minScaleWarning.innerHTML = `<strong>✨ Good Starting Point:</strong> Current scale (${params.scale} units) has operational foundation — continued expansion can gradually improve profitability.<br><br><strong>Juugo Support:</strong> Provides channel resources and operational guidance — helping you steadily expand to healthy scale of ${viability.healthyScale} units.`;
+          } else {
+            minScaleWarning.innerHTML = `<strong>✨ 良好起步点：</strong>当前规模（${params.scale}台）具备运营基础，继续扩张可逐步提升盈利。<br><br><strong>玖果支持：</strong>提供渠道资源和运营指导，帮助您稳健扩张到${viability.healthyScale}台的健康规模。`;
+          }
         }
       }
     }
@@ -799,76 +1057,135 @@ function updateResultUI(params, results, analysis, viability) {
 
   // 投入资金量
   const investmentDisplay = document.getElementById('total-investment-display');
-  const investmentWan = Math.round(results.investment / 10000);
-  investmentDisplay.innerHTML = investmentWan + '<span class="metric-unit">万元</span>';
+  if (lang === 'en') {
+    // 英文模式：¥ + 千分位
+    investmentDisplay.textContent = '¥' + results.investment.toLocaleString();
+  } else {
+    // 中文模式：万
+    const investmentWan = Math.round(results.investment / 10000);
+    investmentDisplay.innerHTML = investmentWan + '<span class="metric-unit">' + t('unit-wan', '万') + '</span>';
+  }
 
   // 项目评级
   const badge = document.getElementById('result-badge');
   badge.className = 'result-badge';
   if (results.rating === 'excellent') {
     badge.classList.add('excellent');
-    badge.textContent = '⭐ 可做';
+    badge.textContent = t('badge-excellent', '⭐ 潜力项目');
   } else if (results.rating === 'good') {
     badge.classList.add('good');
-    badge.textContent = '✓ 谨慎推进';
+    badge.textContent = t('badge-good', '✓ 值得关注');
   } else if (results.rating === 'moderate') {
     badge.classList.add('moderate');
-    badge.textContent = '⚡ 需优化';
+    badge.textContent = t('badge-moderate', '💡 优化空间大');
   } else {
     badge.classList.add('risky');
-    badge.textContent = '⚠️ 风险较高';
+    badge.textContent = t('badge-risky', '🎯 值得探索');
   }
 
-  // 回本周期
+  // 回本周期 - 大于24个月显示"静态发展"而非具体数字，不打击客户
   const paybackEl = document.getElementById('payback-period');
   if (results.paybackMonths >= 999) {
-    paybackEl.innerHTML = '无法回本<span class="metric-unit"></span>';
-  } else if (results.paybackMonths > 36) {
-    paybackEl.innerHTML = '36个月以上<span class="metric-unit"></span>';
+    paybackEl.innerHTML = t('payback-optimize', '需优化') + `<span class="metric-unit">${t('payback-params', '参数')}</span>`;
+  } else if (results.paybackMonths > 24) {
+    // 24个月以上：显示"大于24个月" + "(静态发展)" 换行，避免打击客户信心
+    const over24Label = lang === 'en' ? '&gt;24 months' : '大于24个月';
+    const staticDev = lang === 'en' ? '(Static Dev)' : '（静态发展）';
+    paybackEl.innerHTML = over24Label + `<br><span class="metric-unit">${staticDev}</span>`;
   } else {
     const min = Math.max(6, results.paybackMonths - 3);
     const max = results.paybackMonths + 4;
-    paybackEl.innerHTML = `${min}-${max}<span class="metric-unit">个月</span>`;
+    paybackEl.innerHTML = `${min}-${max}<span class="metric-unit">${t('unit-months', '个月')}</span>`;
   }
 
-  // 月利润潜力
-  document.getElementById('monthly-profit').textContent = results.profitLevel;
+  // 月利润潜力 - 使用翻译
+  const profitKey = 'profit-level-' + results.profitLevel;
+  const profitFallback = results.profitLevel === 'high' ? '高' : (results.profitLevel === 'medium' ? '中等' : (results.profitLevel === 'low' ? '较低' : '需优化'));
+  document.getElementById('monthly-profit').textContent = t(profitKey, profitFallback);
 
   // 资金压力
   const fundDot = document.getElementById('fund-pressure-dot');
   const fundText = document.getElementById('fund-pressure-text');
   fundDot.className = 'risk-dot';
   fundDot.classList.add(results.fundPressure === 'high' ? 'high' : (results.fundPressure === 'medium' ? 'medium' : 'low'));
-  fundText.textContent = results.fundPressure === 'high' ? '高' : (results.fundPressure === 'medium' ? '中等' : '低');
+  const fundKey = results.fundPressure === 'high' ? 'fund-high' : (results.fundPressure === 'medium' ? 'fund-medium' : 'fund-low');
+  fundText.textContent = t(fundKey, results.fundPressure === 'high' ? '高' : (results.fundPressure === 'medium' ? '中等' : '低'));
 
   // 运营复杂度
   const complexityDot = document.getElementById('complexity-dot');
   const complexityText = document.getElementById('complexity-text');
   complexityDot.className = 'risk-dot';
   complexityDot.classList.add(results.complexity === 'high' ? 'high' : (results.complexity === 'medium' ? 'medium' : 'low'));
-  complexityText.textContent = results.complexity === 'high' ? '高' : (results.complexity === 'medium' ? '中等' : '低');
+  const complexityKey = results.complexity === 'high' ? 'complexity-high' : (results.complexity === 'medium' ? 'complexity-medium' : 'complexity-low');
+  complexityText.textContent = t(complexityKey, results.complexity === 'high' ? '高' : (results.complexity === 'medium' ? '中等' : '低'));
 
   // 团队规模
-  document.getElementById('team-size-display').textContent = results.totalTeamSize + ' 人';
+  document.getElementById('team-size-display').textContent = results.totalTeamSize + t('unit-person', '人');
 
-  // 盈利核心判断
-  document.getElementById('profit-analysis').textContent = analysis.profitAnalysis;
+  // 盈利核心判断 - 使用翻译
+  document.getElementById('profit-analysis').textContent = t('analysis-profit-text', analysis.profitAnalysis);
 
-  // 风险提示
+  // 风险提示 - 使用翻译
   const riskList = analysis.risks.map(r => `<li>${r}</li>`).join('');
   document.getElementById('risk-analysis').innerHTML = `<ul>${riskList}</ul>`;
 
-  // 建议动作
+  // 建议动作 - 使用翻译
   const suggestionList = analysis.suggestions.map(s => `<li>${s}</li>`).join('');
   document.getElementById('suggestion-analysis').innerHTML = `<ul>${suggestionList}</ul>`;
 
-  // 成本结构
-  document.getElementById('cost-labor').textContent = formatMoney(results.monthlyLaborCost) + ' 元';
-  document.getElementById('cost-overhead').textContent = formatMoney(results.monthlyOverhead) + ' 元';
-  document.getElementById('cost-split').textContent = formatMoney(results.monthlySplitCost) + ' 元';
-  document.getElementById('cost-system').textContent = formatMoney(results.monthlySystemCost) + ' 元';
-  document.getElementById('cost-total').textContent = formatMoney(results.monthlyLaborCost + results.monthlyOverhead) + ' 元';
-  document.getElementById('cost-revenue').textContent = formatMoney(results.monthlyGrossIncome) + ' 元';
+  // 优化提示区块
+  updateOptimizationTips(analysis.optimizationTips);
+
+  // 成本结构 - 使用本地化格式
+  const formatCostAmount = (num) => {
+    if (lang === 'en') {
+      // 英文模式：统一用 ¥ + 千分位格式
+      return '¥' + num.toLocaleString();
+    }
+    if (num >= 10000) {
+      return (num / 10000).toFixed(1) + '万';
+    }
+    return num.toLocaleString() + '元';
+  };
+
+  document.getElementById('cost-labor').textContent = formatCostAmount(results.monthlyLaborCost);
+  document.getElementById('cost-overhead').textContent = formatCostAmount(results.monthlyOverhead);
+  document.getElementById('cost-split').textContent = formatCostAmount(results.monthlySplitCost);
+  document.getElementById('cost-system').textContent = formatCostAmount(results.monthlySystemCost);
+  document.getElementById('cost-total').textContent = formatCostAmount(results.monthlyLaborCost + results.monthlyOverhead);
+  document.getElementById('cost-revenue').textContent = formatCostAmount(results.monthlyGrossIncome);
+}
+
+// ========== 渲染优化建议区块 ==========
+function updateOptimizationTips(tips) {
+  const container = document.getElementById('optimization-tips');
+  if (!container) return;
+
+  const lang = window.currentLang || 'zh';
+  const titleKey = 'opt-tips-title';
+  const title = translations[titleKey] ? translations[titleKey][lang] : '💡 优化建议（调整这些参数可提升项目可行性）';
+
+  const tipsHTML = tips.map(tip => {
+    const title = translations[tip.titleKey] ? translations[tip.titleKey][lang] : tip.title;
+    const desc = translations[tip.descKey] ? translations[tip.descKey][lang] : tip.desc;
+    const action = translations[tip.actionKey] ? translations[tip.actionKey][lang] : tip.action;
+
+    return `
+      <div class="opt-tip-item">
+        <div class="opt-tip-icon">${tip.icon}</div>
+        <div class="opt-tip-content">
+          <div class="opt-tip-title">${title}</div>
+          <div class="opt-tip-desc">${desc}</div>
+          <div class="opt-tip-action">→ ${action}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="opt-tips-title">${title}</div>
+    <div class="opt-tips-list">${tipsHTML}</div>
+  `;
 }
 
 // ========== 二维码配置（稍后替换为真实图片） ==========
@@ -899,29 +1216,37 @@ document.addEventListener('DOMContentLoaded', function() {
   // 默认语言
   window.currentLang = 'zh';
 
-  // ===== 自动语言切换（根据IP检测） =====
-  function applyAutoLang(lang) {
-    if (lang === 'en') {
-      switchLang('en');
-    }
-  }
-
-  // 等待 autoLangDetect 事件（IP检测触发）
-  document.addEventListener('autoLangDetect', function(e) {
-    if (e.detail === 'en') {
-      switchLang('en');
-      document.getElementById('lang-zh').classList.remove('active');
-      document.getElementById('lang-en').classList.add('active');
-    }
-  });
-
-  // 若 _autoLang 已由 head 脚本设置，立即应用
-  if (window._autoLang === 'en') {
-    switchLang('en');
-    document.getElementById('lang-zh').classList.remove('active');
-    document.getElementById('lang-en').classList.add('active');
-  }
+  // IP自动语言切换 - 中国大陆/港澳台显示中文，其他显示英文
+  detectLanguageByIP();
 });
+
+// ========== IP自动语言切换 ==========
+async function detectLanguageByIP() {
+  try {
+    // 使用 ipapi.co 免费API检测IP位置
+    const response = await fetch('https://ipapi.co/json/', { timeout: 5000 });
+    const data = await response.json();
+
+    if (data && data.country_code) {
+      const country = data.country_code;
+
+      // 中国大陆、香港、澳门、台湾 -> 中文
+      const chineseRegions = ['CN', 'HK', 'MO', 'TW'];
+
+      if (chineseRegions.includes(country)) {
+        window.currentLang = 'zh';
+      } else {
+        window.currentLang = 'en';
+      }
+
+      // 立即应用语言切换
+      switchLang(window.currentLang);
+    }
+  } catch (error) {
+    console.log('IP检测失败，使用默认语言中文');
+    switchLang('zh');
+  }
+}
 
 // ========== 中英文切换 ==========
 
@@ -1059,8 +1384,8 @@ const translations = {
 
   // 分析卡片
   'analysis-profit': { zh: '盈利核心判断', en: 'Profitability Analysis' },
-  'analysis-risk': { zh: '风险提示', en: 'Risk Alerts' },
-  'analysis-suggestion': { zh: '建议动作', en: 'Suggested Actions' },
+  'analysis-risk': { zh: '优化要点', en: 'Optimization Tips' },
+  'analysis-suggestion': { zh: '玖果支持', en: 'Juugo Support' },
   'risk-1': { zh: '您的模型对商户分成比例较为敏感，若实际场地成本上升，回本周期会明显拉长', en: 'Your model is sensitive to merchant split ratio — higher venue costs will extend payback significantly' },
   'risk-2': { zh: '需确认当地BD和运维能力是否匹配投放规模', en: 'Confirm local BD and maintenance capabilities match deployment scale' },
   'suggestion-1': { zh: '建议先以单城市、300-500台进行小规模验证，降低试错成本', en: 'Start with single-city, 300-500 units for small-scale validation to reduce trial costs' },
@@ -1092,6 +1417,8 @@ const translations = {
 
   // 关键变量
   'key-vars-title': { zh: '我们通常会重点复核的4个变量', en: '4 Key Variables We Usually Verify' },
+  'learn-more': { zh: '了解更多', en: 'Learn More' },
+  'official-website': { zh: '官网', en: 'Official Website' },
   'key-var-1': { zh: '单台月收入是否真实达到目标值（建议取保守值）', en: 'Does per-unit monthly revenue actually hit target? (Use conservative estimate)' },
   'key-var-2': { zh: '商户分成是否可控在实际范围内（优先控在20%以内）', en: 'Is merchant split controllable? (Prioritize 20% or below)' },
   'key-var-3': { zh: '团队效率是否匹配投放规模（海外BD效率远低于国内）', en: 'Does team efficiency match scale? (Overseas BD is much less efficient)' },
@@ -1120,35 +1447,98 @@ const translations = {
   'wyg-4': { zh: '1对1项目诊断机会（30分钟语音）', en: '1-on-1 project diagnosis (30-min call)' },
   'btn-back-result': { zh: '← 返回查看结果', en: '← Back to Results' },
 
+  // 优化建议区块
+  'opt-tips-title': { zh: '💡 优化建议（调整这些参数可提升项目可行性）', en: '💡 Optimization Tips (adjust these to improve viability)' },
+
+  // 优化建议 - 分成优化
+  'opt-title-split': { zh: '优化商户分成', en: 'Optimize Merchant Split' },
+  'opt-desc-split': { zh: '将分成从25%降至20%，预计每月可增加约1.5万元净收入', en: 'Reducing split from 25% to 20% can increase monthly net income by ~¥15,000' },
+  'opt-action-split': { zh: '玖果可协助对接分成友好的优质渠道', en: 'Juugo can help connect you with quality channels with better splits' },
+
+  // 优化建议 - 渠道铺设
+  'opt-title-channel': { zh: '增加渠道铺设', en: 'Increase Channel Deployment' },
+  'opt-desc-channel': { zh: '将渠道铺设提升至70%以上，可显著降低人力成本', en: 'Increasing channel deployment to 70%+ can significantly reduce labor costs' },
+  'opt-action-channel': { zh: '玖果有东南亚大型连锁渠道资源，可快速对接', en: 'Juugo has SE Asia chain channel resources for quick deployment' },
+
+  // 优化建议 - 台均收入
+  'opt-title-income': { zh: '提升台均收入', en: 'Increase Per-Unit Revenue' },
+  'opt-desc-income': { zh: '当前台均较低，可通过入驻高客流场所提升至200-300元', en: 'Current per-unit revenue can be improved to ¥200-300 by targeting high-traffic locations' },
+  'opt-action-income': { zh: '玖果提供点位筛选指南和渠道对接服务', en: 'Juugo provides location selection guide and channel connection service' },
+
+  // 优化建议 - 规模
+  'opt-title-scale': { zh: '适当增加起步规模', en: 'Increase Starting Scale' },
+  'opt-desc-scale': { zh: '首批规模较小，建议增至300-500台以形成规模效应', en: 'Starting scale is small. Recommend 300-500 units for scale effect' },
+  'opt-action-scale': { zh: '玖果提供专业运营支持，帮助您顺利起步', en: 'Juugo provides professional operational support to help you get started' },
+
+  // 优化建议 - 团队配置
+  'opt-title-team': { zh: '优化团队配置', en: 'Optimize Team Setup' },
+  'opt-desc-team': { zh: '当前人力成本占比较高，可通过渠道铺设减少BD人员需求', en: 'Current labor cost is relatively high — channel deployment can reduce BD needs' },
+  'opt-action-team': { zh: '玖果提供团队搭建标准和培训支持', en: 'Juugo provides team building standards and training support' },
+
+  // 优化建议 - 效果预估
+  'opt-title-forecast': { zh: '综合优化效果预估', en: 'Combined Optimization Forecast' },
+  'opt-desc-forecast': { zh: '上述优化方案组合实施后，项目有望在指定时间内实现盈利', en: 'After implementing combined optimizations, project can be profitable within target period' },
+  'opt-action-forecast': { zh: '扫码获取详细优化方案和财务测算', en: 'Scan QR for detailed optimization plan and financial projection' },
+
+  // 优化建议 - 良好情况
+  'opt-title-good': { zh: '项目条件良好', en: 'Good Project Conditions' },
+  'opt-desc-good': { zh: '当前参数设置合理，具备良好的盈利基础', en: 'Current parameters are reasonable with good profit potential' },
+  'opt-action-good': { zh: '建议尽快锁定优质渠道开始运营', en: 'Recommend locking in quality channels and starting operations soon' },
+
+  // 结果页通用翻译
+  'profit-level-high': { zh: '高', en: 'High' },
+  'profit-level-medium': { zh: '中等', en: 'Medium' },
+  'profit-level-low': { zh: '较低', en: 'Low' },
+  'profit-level-loss': { zh: '需优化', en: 'Optimize' },
+  'fund-high': { zh: '高', en: 'High' },
+  'fund-medium': { zh: '中等', en: 'Medium' },
+  'fund-low': { zh: '低', en: 'Low' },
+  'complexity-high': { zh: '高', en: 'High' },
+  'complexity-medium': { zh: '中等', en: 'Medium' },
+  'complexity-low': { zh: '低', en: 'Low' },
+  'unit-person': { zh: '人', en: ' people' },
+  'unit-months': { zh: '个月', en: ' months' },
+  'unit-yuan': { zh: '元', en: '' },
+  'unit-wan-display': { zh: '万元', en: '' },
+
+  // 最低规模状态
+  'ms-status-optimize': { zh: '需要优化参数', en: 'Needs Parameter Optimization' },
+  'ms-need-adjust': { zh: '需调整', en: 'Need Adjustment' },
+  'ms-status-scale-tip': { zh: '起步规模建议', en: 'Starting Scale Suggestion' },
+  'ms-status-good-scale': { zh: '规模基本达标', en: 'Scale Basically Qualified' },
+
+  // 评级徽章
+  'badge-excellent': { zh: '⭐ 潜力项目', en: '⭐ Promising' },
+  'badge-good': { zh: '✓ 值得关注', en: '✓ Worth It' },
+  'badge-moderate': { zh: '💡 优化空间大', en: '💡 Optimize' },
+  'badge-risky': { zh: '🎯 值得探索', en: '🎯 Explore' },
+
+  // 回本周期
+  'payback-optimize': { zh: '需优化', en: 'Optimize' },
+  'payback-params': { zh: '参数', en: 'Params' },
+
   // 首批设备盈亏分析
-  'fb-badge': { zh: '📌 首批设备 · 静态测算', en: '📌 First Batch · Static Calculation' },
-  'fb-title': { zh: '首批设备落地盈亏分析', en: 'First Batch Break-Even Analysis' },
-  'fb-subtitle': { zh: '以下为仅落地首批设备的测算结果，持续扩张可加速回本', en: 'Results below are for first batch deployment only. Continuing expansion accelerates payback' },
-  'fb-breakeven-label': { zh: '盈亏平衡点', en: 'Break-Even Point' },
-  'fb-payback-label': { zh: '首批回本周期', en: 'First Batch Payback' }, // 显示在卡片中
-  'fb-payback-note': { zh: '（停止发展，首批设备需', en: '(If paused, first batch needs ' }, // 补充说明
-  'fb-scale-label': { zh: '首批规模', en: 'First Batch Scale' },
-  'fb-months': { zh: '个月', en: ' months' },
-  'fb-contr-text': {
-    zh: '<strong>持续扩张 = 更快回本</strong><br><span>首批回本后，继续铺设第2、3批设备，边际成本更低（团队已成型、渠道已打通），回本周期将显著缩短。</span>',
-    en: '<strong>Scale Further = Faster Payback</strong><br><span>After first batch pays back, adding batch 2 & 3 units lowers marginal cost (team is built, channels are open), significantly shortening payback.</span>'
-  },
-  'fb-note': { zh: '⚠️ 以上数据基于首批设备静态测算，未计入持续扩张带来的规模效应与运营效率提升', en: '⚠️ Results above are static for first batch only, excluding scale economy from continued expansion' },
+  'breakeven-more': { zh: '需更多台数', en: 'Need More Units' },
+  'breakeven-units': { zh: '台起', en: ' units' },
+  'breakeven-static': { zh: '静态', en: 'Static' },
+  'breakeven-static-note': { zh: '发展', en: 'Growth' },
+  'breakeven-over-24': { zh: '大于24个月', en: 'Over 24 months' },
+  'breakeven-static-dev': { zh: '（静态发展）', en: ' (Static Dev)' },
 
-  // 官网引流
-  'website-text': { zh: '了解玖果科技完整解决方案', en: 'Explore Juugo Tech Full-Stack Solutions' },
-  'website-link-text': { zh: '访问官网 www.jiuguotech.com', en: 'Visit www.jiuguotech.com' },
+  // 最低准备资金
+  'min-fund-label': { zh: '最低准备资金', en: 'Minimum Required Fund' },
+  'mf-label': { zh: '💰 最低准备资金', en: '💰 Minimum Required Fund' },
+  'mf-hint': { zh: '硬件投入 + 开办费5万 + 6个月运营备用金', en: 'Hardware + Setup Fee + 6-Month Operating Reserve' },
 
-  // 建议动作（中英双语，因为建议是动态生成的，key用占位符，由JS判断语言返回）
-  'suggest-breakeven-fail': { zh: '⚠️ 当前规模尚未达到盈亏平衡点，建议增加首批采购数量，确保首批落地后当月能覆盖固定运营成本，避免盘子断裂', en: '⚠️ Current scale has not reached break-even. Add more units to ensure monthly revenue covers fixed operating costs from day one' },
-  'suggest-breakeven-slow': { zh: '📊 盈亏平衡需 ' + 'N' + ' 个月，建议在洽谈渠道时优先选择人流密集的连锁点位，缩短爬坡期', en: '📊 Break-even takes N months. Prioritize high-traffic chain locations to shorten the ramp-up period' },
-  'suggest-breakeven-good': { zh: '✅ 首批规模已达到盈亏平衡点以上，盘子健康，建议快速锁定核心渠道启动落地', en: '✅ Scale exceeds break-even point — business is healthy. Move fast to lock in core channels' },
-  'suggest-jiuguo-softpower': { zh: '🤝 玖果提供的不只是硬件，更是"软实力"：协助培养当地用户租借习惯、商户进店激活工具、扫码裂变获客功能，让首批设备快速跑出正向现金流', en: '🤝 Jiuguo offers more than hardware — user habit coaching, merchant activation tools, and QR scan referral features that accelerate positive cash flow' },
-  'suggest-bd-ratio': { zh: '📍 海外市场BD效率偏低，建议以渠道/连锁合作为主，BD为辅，降低人力依赖', en: '📍 Overseas BD efficiency is low. Prioritize chain/channel partnerships over direct BD to reduce labor costs' },
-  'suggest-split-ratio': { zh: '💰 商户分成比例建议控制在20%以内，可向商户强调玖果的导流工具和用户运营支持，提升谈判筹码', en: '💰 Keep merchant split under 20%. Emphasize Jiuguo\'s traffic tools and user operations support to strengthen your negotiating position' },
-  'suggest-staged-purchase': { zh: '💵 建议分两批采购设备：首批60%快速落地验证，第2批40%在首批回本后再追加，降低资金压力', en: '💵 Split into two purchases: 60% first batch for validation, 40% after first batch breaks even — reduces capital pressure' },
-  'suggest-consult': { zh: '📩 当前参数下盈亏难以平衡，欢迎扫码咨询玖果，获取目标市场的定制化落地方案', en: '📩 Break-even is difficult with current parameters. Scan to consult Jiuguo for a customized market entry plan' },
-  'suggest-all-good': { zh: '🚀 各项指标健康，建议尽快与玖果顾问联系，获取目标市场的本地化落地指南和首批设备最优配置方案', en: '🚀 All indicators look good. Contact a Jiuguo advisor to get a localized market guide and optimal first-batch configuration plan' },
+  // 首批设备盈亏分析
+  'fba-title': { zh: '📊 首批设备落地盈亏分析', en: '📊 First Batch Profitability Analysis' },
+  'fba-note': { zh: '静态测算（停止发展时）', en: 'Static Calculation (No Further Expansion)' },
+  'fba-breakeven-label': { zh: '盈亏平衡点', en: 'Break-even Point' },
+  'fba-payback-label': { zh: '首批回本周期', en: 'First Batch Payback' },
+  'fba-scale-label': { zh: '首批规模', en: 'First Batch Scale' },
+  'fba-unit': { zh: '台', en: '' },
+  'fba-expansion-hint': { zh: '持续扩张 = 更快回本', en: 'Continued Expansion = Faster ROI' },
+  'fba-expansion-desc': { zh: '首批回本后，继续扩张的边际成本极低，新增设备几乎全是净利润，可显著加速整体回本', en: 'After first batch ROI, continued expansion has near-zero marginal cost — new devices are almost pure profit, significantly accelerating overall payback' },
 };
 
 function switchLang(lang) {
@@ -1160,9 +1550,23 @@ function switchLang(lang) {
 
   // 更新页面标题
   if (lang === 'en') {
-    document.title = 'Overseas Power Bank Calculator | Juugo Tech';
+    document.title = 'Overseas Power Bank ROI Calculator | Juugo Tech';
+    // 更新 meta 标签
+    document.getElementById('seo-title').content = 'Overseas Power Bank ROI Calculator | Juugo Tech';
+    document.getElementById('seo-description').content = 'Enter key parameters to quickly assess overseas power bank project payback period, ROI potential and risk level. Supports SE Asia, Middle East, Japan/Korea, Europe/US markets. Juugo Tech provides full hardware + software + operations solutions.';
+    document.getElementById('og-title').content = 'Overseas Power Bank ROI Calculator | Juugo Tech';
+    document.getElementById('og-description').content = 'Enter key parameters to quickly assess overseas power bank project payback period, ROI potential and risk level. Supports SE Asia, Middle East, Japan/Korea, Europe/US markets.';
+    document.getElementById('twitter-title').content = 'Overseas Power Bank ROI Calculator | Juugo Tech';
+    document.getElementById('twitter-description').content = 'Enter key parameters to quickly assess overseas power bank project payback period, ROI potential and risk level.';
   } else {
     document.title = '海外共享充电宝项目测算工具 | Juugo Tech';
+    // 更新 meta 标签
+    document.getElementById('seo-title').content = '海外共享充电宝项目测算工具 | Juugo Tech';
+    document.getElementById('seo-description').content = '输入关键参数，快速评估海外共享充电宝项目的回本周期、收益潜力与风险等级。支持东南亚、中东、日韩、欧美等市场。玖果科技提供全套软硬件+运营解决方案。';
+    document.getElementById('og-title').content = '海外共享充电宝项目测算工具 | Juugo Tech';
+    document.getElementById('og-description').content = '输入关键参数，快速评估海外共享充电宝项目的回本周期、收益潜力与风险等级。支持东南亚、中东、日韩、欧美等市场。';
+    document.getElementById('twitter-title').content = '海外共享充电宝项目测算工具 | Juugo Tech';
+    document.getElementById('twitter-description').content = '输入关键参数，快速评估海外共享充电宝项目的回本周期、收益潜力与风险等级。';
   }
 
   // 翻译所有带 data-i18n 属性的元素
@@ -1186,4 +1590,26 @@ function switchLang(lang) {
   if (channelSlider) {
     updateChannelSlider(channelSlider.value);
   }
+
+  // 如果当前在结果页，需要重新渲染动态内容
+  const resultPage = document.getElementById('page-result');
+  if (resultPage && resultPage.classList.contains('active')) {
+    // 触发重新计算以刷新动态内容
+    const params = getUserInputs();
+    if (params.scale) {
+      const results = calculateResults(params);
+      const analysis = generateAnalysis(params, results);
+      const viability = calculateMinimumViableScale(params);
+      updateResultUI(params, results, analysis, viability);
+    }
+  }
+}
+
+// ========== 获取翻译辅助函数 ==========
+function t(key, fallback) {
+  const lang = window.currentLang || 'zh';
+  if (translations[key] && translations[key][lang]) {
+    return translations[key][lang];
+  }
+  return fallback || key;
 }
